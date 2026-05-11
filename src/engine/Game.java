@@ -4,7 +4,7 @@ import piece.*;
 import plateau.Grille;
 
 public class Game {
-    private Grille grille;
+    private final Grille grille;
     private Couleur currentTurn;
     private boolean isFinished;
     private Couleur winner;
@@ -52,11 +52,11 @@ public class Game {
     public boolean tryMove(int startX, int startY, int endX, int endY) {
         if (isFinished) return false;
 
-        Piece p = grille.getPiece(startX, startY);
+        Piece pieceToMove = grille.getPiece(startX, startY);
         // On ne peut bouger que si on a sélectionné une de ses propres pièces
-        if (p == null || p.getCouleur() != currentTurn) return false;
+        if (pieceToMove == null || pieceToMove.getCouleur() != currentTurn) return false;
 
-        if (p.isValidMove(endX, endY, grille)) {
+        if (pieceToMove.isValidMove(endX, endY, grille)) {
             Piece captured = grille.getPiece(endX, endY);
             grille.movePiece(startX, startY, endX, endY);
 

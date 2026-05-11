@@ -1,21 +1,23 @@
 import javax.swing.SwingUtilities;
 import gui.ChessGUI;
-// import cli.ConsoleUI;
-
 import engine.Game;
 
 public class Main {
     public static void main(String[] args) {
         Game game = new Game();
 
-        // Pour lancer en mode console :
-        // ConsoleUI console = new ConsoleUI(game);
-        // console.start();
+        boolean useGui = args.length > 0 && args[0].equals("--gui");
 
-        // Par défaut, lance le mode graphique
-        SwingUtilities.invokeLater(() -> {
-            ChessGUI gui = new ChessGUI(game);
-            gui.setVisible(true);
-        });
+        if (useGui) {
+            // Lancement en mode graphique
+            SwingUtilities.invokeLater(() -> {
+                ChessGUI gui = new ChessGUI(game);
+                gui.setVisible(true);
+            });
+        } else {
+            // Lancement en mode console
+            cli.ConsoleUI console = new cli.ConsoleUI(game);
+            console.start();
+        }
     }
 }

@@ -32,7 +32,7 @@ public class ChessGUI extends JFrame {
         for (int y = 7; y >= 0; y--) { // 8 à 1
             for (int x = 0; x < 8; x++) { // a à h
                 JButton button = new JButton();
-                button.setFont(new Font("Serif", Font.BOLD, 50));
+                button.setFont(new Font("SansSerif", Font.PLAIN, 50));
                 button.setFocusPainted(false);
                 
                 if ((x + y) % 2 == 0) {
