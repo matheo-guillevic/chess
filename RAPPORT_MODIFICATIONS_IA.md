@@ -18,3 +18,4 @@ Il sera mis a jour a chaque prochaine modification de code.
 - Mise a jour des scripts `run.sh`, `run_gui.sh` et `run_tests.sh` pour compiler, copier les ressources et transmettre les arguments.
 - Ajout des pieces personnalisees Bus et Minotaure, avec nouvelles regles JSON `ecraseLigne` et `deplacementCavalier`, plus tests dedies.
 - Ajout d'un menu CLI et GUI de selection unitaire des pieces personnalisees avec previsualisation du symbole, de la position et du fonctionnement.
+- Ajout d'une Javadoc complete sur les classes du projet et d'un script `generate_javadoc.sh` pour generer `doc/javadoc/index.html`.

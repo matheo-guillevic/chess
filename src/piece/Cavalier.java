@@ -1,7 +1,19 @@
 package piece;
 import plateau.Grille;
 
+/**
+ * Piece de type cavalier.
+ *
+ * <p>Le cavalier se deplace en L et peut franchir les autres pieces.</p>
+ */
 public class Cavalier extends Piece {
+    /**
+     * Cree un cavalier.
+     *
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur du cavalier
+     */
     public Cavalier(int x, int y, Couleur couleur) { super(x, y, couleur); }
 
     @Override

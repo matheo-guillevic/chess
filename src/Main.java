@@ -7,7 +7,28 @@ import piece.Couleur;
 import java.nio.file.Path;
 import java.util.Scanner;
 
+/**
+ * Point d'entree de l'application.
+ *
+ * <p>Il choisit le mode de demarrage CLI ou GUI, charge eventuellement un
+ * fichier de pieces personnalisees et configure le mode IA.</p>
+ */
 public class Main {
+    /**
+     * Classe utilitaire non instanciable.
+     */
+    private Main() {
+    }
+
+    /**
+     * Lance l'application.
+     *
+     * <p>Arguments reconnus : {@code --gui}, {@code --cli},
+     * {@code --pieces <fichier>}, {@code --ai}, {@code --ai-white} et
+     * {@code --ai-black}.</p>
+     *
+     * @param args arguments de lancement
+     */
     public static void main(String[] args) {
         Game game = new Game();
 

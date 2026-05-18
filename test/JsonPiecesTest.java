@@ -10,7 +10,15 @@ import plateau.Grille;
 import java.nio.file.Path;
 import java.util.Set;
 
+/**
+ * Tests du chargement JSON et des pieces personnalisees.
+ */
 public class JsonPiecesTest implements TestSuite {
+    /**
+     * Execute les tests lies aux pieces personnalisees.
+     *
+     * @param support utilitaires de test
+     */
     @Override
     public void run(TestSupport support) {
         testCustomJsonPieces(support);

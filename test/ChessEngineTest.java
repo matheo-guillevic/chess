@@ -1,4 +1,12 @@
+/**
+ * Lance toutes les suites de tests sans dependance externe.
+ */
 public class ChessEngineTest {
+    /**
+     * Point d'entree du runner de tests.
+     *
+     * @param args arguments ignores
+     */
     public static void main(String[] args) {
         TestSupport support = new TestSupport();
         TestSuite[] suites = {

@@ -18,20 +18,45 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Fenetre Swing principale du jeu d'echecs.
+ *
+ * <p>Elle permet de jouer sur un echiquier cliquable, de charger des pieces
+ * personnalisees avec previsualisation, de choisir la promotion et d'activer le
+ * mode IA.</p>
+ */
 public class ChessGUI extends JFrame {
+    /** Boutons de l'echiquier indexes par coordonnees internes. */
     private final JButton[][] buttons = new JButton[8][8];
+    /** Partie affichee et pilotee par la fenetre. */
     private Game game;
+    /** Police capable d'afficher les symboles d'echecs Unicode. */
     private Font chessFont;
+    /** Barre de statut affichee sous l'echiquier. */
     private JLabel statusLabel;
+    /** Couleur controlee par l'ordinateur, ou {@code null} en humain contre humain. */
     private Couleur couleurIA;
 
+    /** Colonne de la piece actuellement selectionnee, ou -1. */
     private int selectedX = -1;
+    /** Ligne de la piece actuellement selectionnee, ou -1. */
     private int selectedY = -1;
 
+    /**
+     * Cree une fenetre sans IA.
+     *
+     * @param game partie a afficher
+     */
     public ChessGUI(Game game) {
         this(game, null);
     }
 
+    /**
+     * Cree une fenetre.
+     *
+     * @param game partie a afficher
+     * @param couleurIA couleur controlee par l'ordinateur, ou {@code null}
+     */
     public ChessGUI(Game game, Couleur couleurIA) {
         this.game = game;
         this.couleurIA = couleurIA;

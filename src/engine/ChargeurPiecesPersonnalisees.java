@@ -17,11 +17,39 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Chargeur de pieces personnalisees depuis un fichier JSON.
+ *
+ * <p>Il sait resoudre un fichier depuis le chemin fourni, le repertoire courant,
+ * les dossiers parents ou les ressources du classpath. Il sert aussi a lire un
+ * catalogue de previsualisation avant chargement selectif.</p>
+ */
 public class ChargeurPiecesPersonnalisees {
+    /**
+     * Cree un chargeur de pieces personnalisees.
+     */
+    public ChargeurPiecesPersonnalisees() {
+    }
+
+    /**
+     * Charge toutes les pieces personnalisees presentes dans un fichier.
+     *
+     * @param fichier fichier JSON a lire
+     * @param grille plateau recevant les pieces
+     * @return resultat du chargement
+     */
     public ChargementPiecesResultat charger(Path fichier, Grille grille) {
         return charger(fichier, grille, Collections.emptySet());
     }
 
+    /**
+     * Charge seulement les pieces dont le nom est selectionne.
+     *
+     * @param fichier fichier JSON a lire
+     * @param grille plateau recevant les pieces
+     * @param nomsSelectionnes noms exacts des pieces a charger, ou ensemble vide pour tout charger
+     * @return resultat du chargement
+     */
     public ChargementPiecesResultat charger(Path fichier, Grille grille, Set<String> nomsSelectionnes) {
         ChargementPiecesResultat resultat = new ChargementPiecesResultat();
 
@@ -41,6 +69,12 @@ public class ChargeurPiecesPersonnalisees {
         return resultat;
     }
 
+    /**
+     * Lit les informations de catalogue sans modifier le plateau.
+     *
+     * @param fichier fichier JSON a lire
+     * @return pieces disponibles pour selection et previsualisation
+     */
     public List<PiecePersonnaliseeInfo> lireCatalogue(Path fichier) {
         List<PiecePersonnaliseeInfo> catalogue = new ArrayList<>();
         try {

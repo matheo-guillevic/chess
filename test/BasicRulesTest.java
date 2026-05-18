@@ -3,7 +3,16 @@ import piece.Couleur;
 import piece.Pion;
 import piece.Roi;
 
+/**
+ * Tests des regles de base du moteur : position initiale, mouvement, capture
+ * et refus d'un coup laissant l'echec.
+ */
 public class BasicRulesTest implements TestSuite {
+    /**
+     * Execute les tests des regles de base.
+     *
+     * @param support utilitaires de test
+     */
     @Override
     public void run(TestSupport support) {
         testInitialBoard(support);

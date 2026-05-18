@@ -1,7 +1,17 @@
 package piece;
 import plateau.Grille;
 
+/**
+ * Piece de type fou, deplacable en diagonale sans franchir d'obstacle.
+ */
 public class Fou extends Piece {
+    /**
+     * Cree un fou.
+     *
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur du fou
+     */
     public Fou(int x, int y, Couleur couleur) { super(x, y, couleur); }
 
     @Override

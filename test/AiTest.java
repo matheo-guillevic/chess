@@ -4,7 +4,15 @@ import piece.Couleur;
 
 import java.util.Optional;
 
+/**
+ * Tests du joueur automatique.
+ */
 public class AiTest implements TestSuite {
+    /**
+     * Execute les tests lies a l'IA.
+     *
+     * @param support utilitaires de test
+     */
     @Override
     public void run(TestSupport support) {
         testAutomaticPlayer(support);

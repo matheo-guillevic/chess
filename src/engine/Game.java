@@ -9,6 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Moteur principal d'une partie d'echecs.
+ *
+ * <p>Cette classe centralise l'etat de la partie, le joueur courant, la
+ * validation des coups legaux, les regles speciales, les pieces personnalisees
+ * et l'IA.</p>
+ */
 public class Game {
     private final Grille grille;
     private Couleur currentTurn;
@@ -18,6 +25,9 @@ public class Game {
     private int caseEnPassantX = -1;
     private int caseEnPassantY = -1;
 
+    /**
+     * Cree une nouvelle partie avec la position initiale standard.
+     */
     public Game() {
         this.grille = new Grille();
         this.currentTurn = Couleur.BLANC;
@@ -25,23 +35,65 @@ public class Game {
         initPiece();
     }
 
+    /**
+     * Renvoie le plateau courant.
+     *
+     * @return grille courante de la partie
+     */
     public Grille getGrille() { return grille; }
+    /**
+     * Renvoie le joueur actif.
+     *
+     * @return couleur dont c'est le tour
+     */
     public Couleur getCurrentTurn() { return currentTurn; }
+    /**
+     * Indique si la partie est terminee.
+     *
+     * @return {@code true} si la partie est terminee
+     */
     public boolean isFinished() { return isFinished; }
+    /**
+     * Renvoie le gagnant.
+     *
+     * @return couleur gagnante, ou {@code null} en cas de pat ou partie non terminee
+     */
     public Couleur getWinner() { return winner; }
 
+    /**
+     * Charge toutes les pieces personnalisees d'un fichier JSON.
+     *
+     * @param fichier chemin du fichier JSON
+     * @return resultat du chargement
+     */
     public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier) {
         return new ChargeurPiecesPersonnalisees().charger(fichier, grille);
     }
 
+    /**
+     * Charge uniquement certaines pieces personnalisees d'un fichier JSON.
+     *
+     * @param fichier chemin du fichier JSON
+     * @param nomsSelectionnes noms exacts des pieces a charger, ou ensemble vide pour tout charger
+     * @return resultat du chargement
+     */
     public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier, Set<String> nomsSelectionnes) {
         return new ChargeurPiecesPersonnalisees().charger(fichier, grille, nomsSelectionnes);
     }
 
+    /**
+     * Lit le catalogue des pieces personnalisables sans les placer sur le plateau.
+     *
+     * @param fichier chemin du fichier JSON
+     * @return liste des pieces disponibles pour previsualisation
+     */
     public List<PiecePersonnaliseeInfo> lireCataloguePiecesPersonnalisees(Path fichier) {
         return new ChargeurPiecesPersonnalisees().lireCatalogue(fichier);
     }
 
+    /**
+     * Place les pieces classiques dans leur position initiale.
+     */
     public void initPiece() {
         grille.setPiece(new Tour(0, 0, Couleur.BLANC), 0, 0);
         grille.setPiece(new Cavalier(1, 0, Couleur.BLANC), 1, 0);
@@ -64,10 +116,29 @@ public class Game {
         for (int i = 0; i < 8; i++) grille.setPiece(new Pion(i, 6, Couleur.NOIR), i, 6);
     }
 
+    /**
+     * Tente de jouer un coup en promouvant les pions en reine par defaut.
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @return {@code true} si le coup est legal et applique
+     */
     public boolean tryMove(int startX, int startY, int endX, int endY) {
         return tryMove(startX, startY, endX, endY, "reine");
     }
 
+    /**
+     * Tente de jouer un coup avec choix explicite de promotion.
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @param promotion type de promotion : reine, tour, fou ou cavalier
+     * @return {@code true} si le coup est legal et applique
+     */
     public boolean tryMove(int startX, int startY, int endX, int endY, String promotion) {
         if (isFinished) return false;
 
@@ -81,12 +152,23 @@ public class Game {
         return true;
     }
 
+    /**
+     * Fait jouer automatiquement le joueur courant.
+     *
+     * @return coup joue, ou vide si aucun coup n'est possible
+     */
     public Optional<Coup> jouerCoupAutomatique() {
         Optional<Coup> coup = new JoueurAutomatique().choisirCoup(this);
         coup.ifPresent(c -> tryMove(c.getStartX(), c.getStartY(), c.getEndX(), c.getEndY()));
         return coup;
     }
 
+    /**
+     * Choisit un meilleur coup selon une recherche MinMax alpha-beta.
+     *
+     * @param profondeur profondeur de recherche
+     * @return meilleur coup trouve, ou vide si aucun coup n'est possible
+     */
     public Optional<Coup> choisirMeilleurCoup(int profondeur) {
         List<Coup> coups = getCoupsValides(currentTurn);
         if (coups.isEmpty()) return Optional.empty();
@@ -111,6 +193,12 @@ public class Game {
         return Optional.of(meilleurCoup);
     }
 
+    /**
+     * Genere tous les coups legaux d'une couleur.
+     *
+     * @param couleur couleur analysee
+     * @return liste des coups autorises
+     */
     public List<Coup> getCoupsValides(Couleur couleur) {
         List<Coup> coups = new ArrayList<>();
         for (int startY = 0; startY < 8; startY++) {
@@ -130,6 +218,12 @@ public class Game {
         return coups;
     }
 
+    /**
+     * Indique si le roi d'une couleur est actuellement attaque.
+     *
+     * @param couleur couleur du roi a tester
+     * @return {@code true} si le roi est en echec
+     */
     public boolean isKingInCheck(Couleur couleur) {
         Piece roi = trouverRoi(couleur);
         if (roi == null) return false;

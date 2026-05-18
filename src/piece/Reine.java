@@ -1,7 +1,17 @@
 package piece;
 import plateau.Grille;
 
+/**
+ * Piece de type reine combinant les deplacements de la tour et du fou.
+ */
 public class Reine extends Piece {
+    /**
+     * Cree une reine.
+     *
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur de la reine
+     */
     public Reine(int x, int y, Couleur couleur) { super(x, y, couleur); }
 
     @Override

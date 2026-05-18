@@ -2,11 +2,28 @@ package piece;
 
 import plateau.Grille;
 
+/**
+ * Piece chargee depuis un fichier JSON.
+ *
+ * <p>Son comportement est decrit par {@link ReglesDeplacement}, ce qui permet
+ * d'ajouter des pieces comme le lion, le bus ou le minotaure sans creer de
+ * nouvelle classe Java dediee.</p>
+ */
 public class PiecePersonnalisee extends Piece {
     private final String nom;
     private final String symbole;
     private final ReglesDeplacement regles;
 
+    /**
+     * Cree une piece personnalisee.
+     *
+     * @param nom nom affiche de la piece
+     * @param symbole symbole texte ou Unicode
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur de la piece
+     * @param regles regles dynamiques de deplacement
+     */
     public PiecePersonnalisee(String nom, String symbole, int x, int y, Couleur couleur, ReglesDeplacement regles) {
         super(x, y, couleur);
         this.nom = nom;
@@ -14,10 +31,20 @@ public class PiecePersonnalisee extends Piece {
         this.regles = regles;
     }
 
+    /**
+     * Renvoie le nom.
+     *
+     * @return nom affiche de la piece
+     */
     public String getNom() {
         return nom;
     }
 
+    /**
+     * Renvoie les regles dynamiques.
+     *
+     * @return regles dynamiques associees a la piece
+     */
     public ReglesDeplacement getRegles() {
         return regles;
     }
@@ -56,6 +83,9 @@ public class PiecePersonnalisee extends Piece {
         return regles.peutSauter() || isPathClear(newX, newY, grille);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSymbol() {
         return symbole;

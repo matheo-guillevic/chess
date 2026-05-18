@@ -5,14 +5,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Petit parseur JSON autonome utilise pour eviter une dependance externe.
+ *
+ * <p>Il prend en charge les objets, tableaux, chaines, nombres, booleens et
+ * {@code null}, ce qui suffit au schema des pieces personnalisees du projet.</p>
+ */
 public class SimpleJsonParser {
     private final String json;
     private int index;
 
+    /**
+     * Cree un parseur pour une chaine JSON.
+     *
+     * @param json contenu JSON brut
+     */
     public SimpleJsonParser(String json) {
         this.json = json;
     }
 
+    /**
+     * Parse le document complet.
+     *
+     * @return objet Java correspondant au JSON : {@link Map}, {@link List},
+     *         {@link String}, {@link Number}, {@link Boolean} ou {@code null}
+     * @throws IllegalArgumentException si le JSON est invalide
+     */
     public Object parse() {
         Object value = parseValue();
         skipWhitespace();

@@ -1,7 +1,21 @@
 package piece;
 import plateau.Grille;
 
+/**
+ * Piece de type pion.
+ *
+ * <p>Le pion avance d'une case, peut avancer de deux cases depuis sa ligne de
+ * depart et capture en diagonale. Les regles speciales comme la prise en
+ * passant et la promotion sont appliquees dans le moteur de partie.</p>
+ */
 public class Pion extends Piece {
+    /**
+     * Cree un pion.
+     *
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur du pion
+     */
     public Pion(int x, int y, Couleur couleur) { super(x, y, couleur); }
 
     @Override
@@ -25,6 +39,9 @@ public class Pion extends Piece {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSymbol() { 
         return new String(Character.toChars(couleur == Couleur.BLANC ? PAWN_WHITE : PAWN_BLACK)); 

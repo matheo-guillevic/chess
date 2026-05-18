@@ -12,25 +12,52 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * Interface utilisateur en ligne de commande.
+ *
+ * <p>Elle gere le chargement interactif des pieces personnalisees, la saisie
+ * des coups au format {@code e2 e4}, l'affichage du plateau et le mode IA.</p>
+ */
 public class ConsoleUI {
     private final Game game;
     private final boolean proposerPiecesPersonnalisees;
     private final Couleur couleurIA;
 
+    /**
+     * Cree une interface console avec chargement JSON propose et sans IA.
+     *
+     * @param game partie a piloter
+     */
     public ConsoleUI(Game game) {
         this(game, true, null);
     }
 
+    /**
+     * Cree une interface console.
+     *
+     * @param game partie a piloter
+     * @param proposerPiecesPersonnalisees {@code true} pour proposer le chargement JSON au lancement
+     */
     public ConsoleUI(Game game, boolean proposerPiecesPersonnalisees) {
         this(game, proposerPiecesPersonnalisees, null);
     }
 
+    /**
+     * Cree une interface console complete.
+     *
+     * @param game partie a piloter
+     * @param proposerPiecesPersonnalisees {@code true} pour proposer le chargement JSON
+     * @param couleurIA couleur jouee par l'ordinateur, ou {@code null} sans IA
+     */
     public ConsoleUI(Game game, boolean proposerPiecesPersonnalisees, Couleur couleurIA) {
         this.game = game;
         this.proposerPiecesPersonnalisees = proposerPiecesPersonnalisees;
         this.couleurIA = couleurIA;
     }
 
+    /**
+     * Lance la boucle de jeu console.
+     */
     public void start() {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("=== Jeu d'Echecs ===");

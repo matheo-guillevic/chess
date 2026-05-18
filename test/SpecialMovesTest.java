@@ -5,7 +5,15 @@ import piece.Reine;
 import piece.Roi;
 import plateau.Grille;
 
+/**
+ * Tests des mouvements speciaux : roque, prise en passant et promotion.
+ */
 public class SpecialMovesTest implements TestSuite {
+    /**
+     * Execute les tests de mouvements speciaux.
+     *
+     * @param support utilitaires de test
+     */
     @Override
     public void run(TestSupport support) {
         testCastling(support);
