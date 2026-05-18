@@ -13,32 +13,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 public class ChargeurPiecesPersonnalisees {
     public ChargementPiecesResultat charger(Path fichier, Grille grille) {
-        ChargementPiecesResultat resultat = new ChargementPiecesResultat();
-        Path fichierResolue = resoudreFichier(fichier);
+        return charger(fichier, grille, Collections.emptySet());
+    }
 
-        if (fichierResolue == null) {
-            resultat.ajouterErreur("Fichier introuvable : " + fichier + " (repertoire courant : " + System.getProperty("user.dir") + ")");
-            return resultat;
-        }
+    public ChargementPiecesResultat charger(Path fichier, Grille grille, Set<String> nomsSelectionnes) {
+        ChargementPiecesResultat resultat = new ChargementPiecesResultat();
 
         try {
-            Object racine = new SimpleJsonParser(Files.readString(fichierResolue)).parse();
-            if (!(racine instanceof Map<?, ?>)) {
-                resultat.ajouterErreur("Le fichier JSON doit contenir un objet racine.");
-                return resultat;
-            }
-
-            Object pieces = ((Map<?, ?>) racine).get("piecesPersonnalisees");
-            if (!(pieces instanceof List<?>)) {
-                resultat.ajouterErreur("Le fichier ne contient pas de tableau piecesPersonnalisees.");
-                return resultat;
-            }
-
-            for (Object piece : (List<?>) pieces) {
-                ajouterPiece(asMap(piece), grille, resultat);
+            for (Map<?, ?> definition : lireDefinitions(fichier)) {
+                String nom = nomPiece(definition);
+                if (nomsSelectionnes == null || nomsSelectionnes.isEmpty() || nomsSelectionnes.contains(nom)) {
+                    ajouterPiece(definition, grille, resultat);
+                }
             }
         } catch (IOException e) {
             resultat.ajouterErreur("Impossible de lire le fichier : " + e.getMessage());
@@ -47,6 +39,59 @@ public class ChargeurPiecesPersonnalisees {
         }
 
         return resultat;
+    }
+
+    public List<PiecePersonnaliseeInfo> lireCatalogue(Path fichier) {
+        List<PiecePersonnaliseeInfo> catalogue = new ArrayList<>();
+        try {
+            for (Map<?, ?> definition : lireDefinitions(fichier)) {
+                Map<?, ?> position = asMap(definition.get("positionInitiale"));
+                Map<?, ?> regles = asMap(definition.get("reglesDeplacement"));
+                if (position == null || regles == null) continue;
+
+                Integer x = asInteger(position.get("x"));
+                Integer y = asInteger(position.get("y"));
+                if (x == null || y == null) continue;
+
+                catalogue.add(new PiecePersonnaliseeInfo(
+                        nomPiece(definition),
+                        convertirSymbole(asString(definition.get("codeUnicode"))),
+                        String.valueOf(definition.get("couleur")),
+                        x,
+                        y,
+                        asString(regles.get("description"))
+                ));
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            return Collections.emptyList();
+        }
+        return catalogue;
+    }
+
+    private List<Map<?, ?>> lireDefinitions(Path fichier) throws IOException {
+        Path fichierResolue = resoudreFichier(fichier);
+        if (fichierResolue == null) {
+            throw new IOException("Fichier introuvable : " + fichier + " (repertoire courant : " + System.getProperty("user.dir") + ")");
+        }
+
+        Object racine = new SimpleJsonParser(Files.readString(fichierResolue)).parse();
+        if (!(racine instanceof Map<?, ?>)) {
+            throw new IllegalArgumentException("Le fichier JSON doit contenir un objet racine.");
+        }
+
+        Object pieces = ((Map<?, ?>) racine).get("piecesPersonnalisees");
+        if (!(pieces instanceof List<?>)) {
+            throw new IllegalArgumentException("Le fichier ne contient pas de tableau piecesPersonnalisees.");
+        }
+
+        List<Map<?, ?>> definitions = new ArrayList<>();
+        for (Object piece : (List<?>) pieces) {
+            Map<?, ?> definition = asMap(piece);
+            if (definition != null) {
+                definitions.add(definition);
+            }
+        }
+        return definitions;
     }
 
     private Path resoudreFichier(Path fichier) {
@@ -99,10 +144,7 @@ public class ChargeurPiecesPersonnalisees {
     }
 
     private void ajouterPiece(Map<?, ?> definition, Grille grille, ChargementPiecesResultat resultat) {
-        String nom = asString(definition.get("nom"));
-        if (nom == null || nom.isBlank()) {
-            nom = "Piece personnalisee";
-        }
+        String nom = nomPiece(definition);
 
         Map<?, ?> position = asMap(definition.get("positionInitiale"));
         Map<?, ?> reglesMap = asMap(definition.get("reglesDeplacement"));
@@ -162,6 +204,11 @@ public class ChargeurPiecesPersonnalisees {
 
     private String asString(Object value) {
         return value instanceof String ? (String) value : null;
+    }
+
+    private String nomPiece(Map<?, ?> definition) {
+        String nom = asString(definition.get("nom"));
+        return nom == null || nom.isBlank() ? "Piece personnalisee" : nom;
     }
 
     private Integer asInteger(Object value) {

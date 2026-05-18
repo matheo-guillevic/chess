@@ -3,10 +3,14 @@ package cli;
 import engine.ChargementPiecesResultat;
 import engine.Coup;
 import engine.Game;
+import engine.PiecePersonnaliseeInfo;
 import piece.Couleur;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Set;
 
 public class ConsoleUI {
     private final Game game;
@@ -129,10 +133,57 @@ public class ConsoleUI {
             chemin = "pieces_perso.json";
         }
 
-        ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(Path.of(chemin));
+        Path fichier = Path.of(chemin);
+        List<PiecePersonnaliseeInfo> catalogue = game.lireCataloguePiecesPersonnalisees(fichier);
+        Set<String> selection = choisirPiecesPersonnalisees(scanner, catalogue);
+        if (selection == null) {
+            System.out.println("Chargement annule.");
+            return;
+        }
+
+        ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(fichier, selection);
         System.out.println(resultat.getPiecesAjoutees() + " piece(s) personnalisee(s) ajoutee(s).");
         for (String erreur : resultat.getErreurs()) {
             System.out.println("- " + erreur);
         }
+    }
+
+    private Set<String> choisirPiecesPersonnalisees(Scanner scanner, List<PiecePersonnaliseeInfo> catalogue) {
+        if (catalogue.isEmpty()) {
+            System.out.println("Aucune piece personnalisee lisible dans ce fichier.");
+            return null;
+        }
+
+        System.out.println();
+        System.out.println("Pieces disponibles :");
+        for (int i = 0; i < catalogue.size(); i++) {
+            PiecePersonnaliseeInfo info = catalogue.get(i);
+            System.out.println((i + 1) + " - " + info);
+        }
+        System.out.println("Entrez les numeros a charger separes par des virgules, ou 'all' pour tout charger.");
+        System.out.print("Votre selection [all] : ");
+        if (!scanner.hasNextLine()) return null;
+
+        String input = scanner.nextLine().trim().toLowerCase();
+        if (input.isEmpty() || input.equals("all") || input.equals("tout")) {
+            return Set.of();
+        }
+
+        Set<String> selection = new HashSet<>();
+        String[] morceaux = input.split(",");
+        for (String morceau : morceaux) {
+            try {
+                int index = Integer.parseInt(morceau.trim()) - 1;
+                if (index >= 0 && index < catalogue.size()) {
+                    PiecePersonnaliseeInfo info = catalogue.get(index);
+                    selection.add(info.getNom());
+                    System.out.println("Selection : " + info.getSymbole() + " " + info.getNom() + " - " + info.getDescription());
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Selection ignoree : " + morceau.trim());
+            }
+        }
+
+        return selection.isEmpty() ? null : selection;
     }
 }

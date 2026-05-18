@@ -8,11 +8,13 @@ import piece.Roi;
 import plateau.Grille;
 
 import java.nio.file.Path;
+import java.util.Set;
 
 public class JsonPiecesTest implements TestSuite {
     @Override
     public void run(TestSupport support) {
         testCustomJsonPieces(support);
+        testSelectiveCustomJsonPieces(support);
         testBusCrushesLine(support);
         testMinotaurMoves(support);
     }
@@ -27,6 +29,20 @@ public class JsonPiecesTest implements TestSuite {
         support.assertTrue("piece personnalisee noire en d6", game.getGrille().getPiece(3, 5) instanceof PiecePersonnalisee);
         support.assertTrue("bus blanc en a3", game.getGrille().getPiece(0, 2) instanceof PiecePersonnalisee);
         support.assertTrue("minotaure blanc en h3", game.getGrille().getPiece(7, 2) instanceof PiecePersonnalisee);
+    }
+
+    private void testSelectiveCustomJsonPieces(TestSupport support) {
+        Game game = new Game();
+        ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(
+                Path.of("pieces_perso.json"),
+                Set.of("Bus Blanc", "Bus Noir")
+        );
+
+        support.assertEquals("chargement selectif : deux bus ajoutes", 2, resultat.getPiecesAjoutees());
+        support.assertTrue("bus blanc charge en a3", game.getGrille().getPiece(0, 2) instanceof PiecePersonnalisee);
+        support.assertTrue("bus noir charge en a6", game.getGrille().getPiece(0, 5) instanceof PiecePersonnalisee);
+        support.assertNull("lion blanc non charge en d3", game.getGrille().getPiece(3, 2));
+        support.assertNull("minotaure blanc non charge en h3", game.getGrille().getPiece(7, 2));
     }
 
     private void testBusCrushesLine(TestSupport support) {

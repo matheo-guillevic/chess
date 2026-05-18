@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class Game {
     private final Grille grille;
@@ -31,6 +32,14 @@ public class Game {
 
     public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier) {
         return new ChargeurPiecesPersonnalisees().charger(fichier, grille);
+    }
+
+    public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier, Set<String> nomsSelectionnes) {
+        return new ChargeurPiecesPersonnalisees().charger(fichier, grille, nomsSelectionnes);
+    }
+
+    public List<PiecePersonnaliseeInfo> lireCataloguePiecesPersonnalisees(Path fichier) {
+        return new ChargeurPiecesPersonnalisees().lireCatalogue(fichier);
     }
 
     public void initPiece() {

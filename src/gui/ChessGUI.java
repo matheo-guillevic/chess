@@ -3,6 +3,7 @@ package gui;
 import engine.ChargementPiecesResultat;
 import engine.Coup;
 import engine.Game;
+import engine.PiecePersonnaliseeInfo;
 import piece.Couleur;
 import piece.Piece;
 import piece.Pion;
@@ -11,7 +12,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class ChessGUI extends JFrame {
     private final JButton[][] buttons = new JButton[8][8];
@@ -111,7 +116,11 @@ public class ChessGUI extends JFrame {
         if (result != JFileChooser.APPROVE_OPTION) return;
 
         Path fichier = chooser.getSelectedFile().toPath();
-        ChargementPiecesResultat chargement = game.chargerPiecesPersonnalisees(fichier);
+        List<PiecePersonnaliseeInfo> catalogue = game.lireCataloguePiecesPersonnalisees(fichier);
+        Set<String> selection = choisirPiecesPersonnalisees(catalogue);
+        if (selection == null) return;
+
+        ChargementPiecesResultat chargement = game.chargerPiecesPersonnalisees(fichier, selection);
         updateBoardDisplay();
 
         StringBuilder message = new StringBuilder();
@@ -120,6 +129,107 @@ public class ChessGUI extends JFrame {
             message.append("\n- ").append(erreur);
         }
         JOptionPane.showMessageDialog(this, message.toString(), "Chargement JSON", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private Set<String> choisirPiecesPersonnalisees(List<PiecePersonnaliseeInfo> catalogue) {
+        if (catalogue.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Aucune piece personnalisée lisible dans ce fichier.", "Chargement JSON", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+
+        JDialog dialog = new JDialog(this, "Choisir les pieces personnalisees", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        DefaultListModel<PiecePersonnaliseeInfo> model = new DefaultListModel<>();
+        for (PiecePersonnaliseeInfo info : catalogue) {
+            model.addElement(info);
+        }
+
+        JList<PiecePersonnaliseeInfo> list = new JList<>(model);
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setSelectedIndices(tousLesIndices(catalogue.size()));
+        list.setCellRenderer((jList, value, index, isSelected, cellHasFocus) -> {
+            JLabel label = new JLabel(value.getSymbole() + "  " + value.getNom() + " (" + value.getCouleur() + ", " + value.getCoordonnee() + ")");
+            label.setOpaque(true);
+            label.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+            label.setBackground(isSelected ? new Color(184, 207, 229) : Color.WHITE);
+            return label;
+        });
+
+        JTextArea preview = new JTextArea();
+        preview.setEditable(false);
+        preview.setLineWrap(true);
+        preview.setWrapStyleWord(true);
+        preview.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        preview.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        list.addListSelectionListener(e -> {
+            List<PiecePersonnaliseeInfo> selected = list.getSelectedValuesList();
+            preview.setText(creerPreview(selected.isEmpty() ? catalogue : selected));
+        });
+        preview.setText(creerPreview(list.getSelectedValuesList()));
+
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(list),
+                new JScrollPane(preview)
+        );
+        splitPane.setResizeWeight(0.45);
+        splitPane.setPreferredSize(new Dimension(720, 360));
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton toutSelectionner = new JButton("Tout selectionner");
+        JButton charger = new JButton("Charger");
+        JButton annuler = new JButton("Annuler");
+        final boolean[] accepte = {false};
+
+        toutSelectionner.addActionListener(e -> list.setSelectedIndices(tousLesIndices(catalogue.size())));
+        charger.addActionListener(e -> {
+            accepte[0] = true;
+            dialog.dispose();
+        });
+        annuler.addActionListener(e -> dialog.dispose());
+        buttonsPanel.add(toutSelectionner);
+        buttonsPanel.add(charger);
+        buttonsPanel.add(annuler);
+
+        dialog.add(splitPane, BorderLayout.CENTER);
+        dialog.add(buttonsPanel, BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        if (!accepte[0]) return null;
+
+        Set<String> selection = new HashSet<>();
+        for (PiecePersonnaliseeInfo info : list.getSelectedValuesList()) {
+            selection.add(info.getNom());
+        }
+        if (selection.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selectionnez au moins une piece.", "Chargement JSON", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        return selection;
+    }
+
+    private int[] tousLesIndices(int taille) {
+        int[] indices = new int[taille];
+        for (int i = 0; i < taille; i++) {
+            indices[i] = i;
+        }
+        return indices;
+    }
+
+    private String creerPreview(List<PiecePersonnaliseeInfo> infos) {
+        List<String> lignes = new ArrayList<>();
+        for (PiecePersonnaliseeInfo info : infos) {
+            lignes.add(info.getSymbole() + " " + info.getNom());
+            lignes.add("Couleur : " + info.getCouleur());
+            lignes.add("Position : " + info.getCoordonnee());
+            lignes.add("Fonctionnement : " + info.getDescription());
+            lignes.add("");
+        }
+        return String.join("\n", lignes);
     }
 
     private void definirIA(Couleur couleurIA) {
