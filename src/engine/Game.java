@@ -198,6 +198,10 @@ public class Game {
             grille.setPiece(null, endX, startY);
         }
 
+        if (isEcrasementLigne(piece, startX, startY, endX, endY)) {
+            supprimerPiecesEcrasees(startX, startY, endX, endY, etat.piecesEcrasees);
+        }
+
         if (isRoqueValide(piece, startX, startY, endX, endY)) {
             int direction = Integer.compare(endX, startX);
             etat.rookStartX = direction > 0 ? 7 : 0;
@@ -220,6 +224,10 @@ public class Game {
             grille.setPiece(etat.captureEnPassant, etat.captureEnPassantX, etat.captureEnPassantY);
         }
 
+        for (PieceEcrasee pieceEcrasee : etat.piecesEcrasees) {
+            grille.setPiece(pieceEcrasee.piece, pieceEcrasee.x, pieceEcrasee.y);
+        }
+
         if (etat.rook != null) {
             grille.setPiece(null, etat.rookEndX, etat.startY);
             grille.setPiece(etat.rook, etat.rookStartX, etat.startY);
@@ -234,6 +242,10 @@ public class Game {
 
         if (priseEnPassant) {
             grille.setPiece(null, endX, startY);
+        }
+
+        if (isEcrasementLigne(piece, startX, startY, endX, endY)) {
+            supprimerPiecesEcrasees(startX, startY, endX, endY, null);
         }
 
         if (roque) {
@@ -276,6 +288,31 @@ public class Game {
             case "reine":
             default:
                 return new Reine(x, y, couleur);
+        }
+    }
+
+    private boolean isEcrasementLigne(Piece piece, int startX, int startY, int endX, int endY) {
+        if (!(piece instanceof PiecePersonnalisee)) return false;
+        PiecePersonnalisee piecePersonnalisee = (PiecePersonnalisee) piece;
+        return piecePersonnalisee.getRegles().ecraseLigne() && (startX == endX || startY == endY);
+    }
+
+    private void supprimerPiecesEcrasees(int startX, int startY, int endX, int endY, List<PieceEcrasee> sauvegarde) {
+        int stepX = Integer.compare(endX, startX);
+        int stepY = Integer.compare(endY, startY);
+        int currX = startX + stepX;
+        int currY = startY + stepY;
+
+        while (currX != endX || currY != endY) {
+            Piece piece = grille.getPiece(currX, currY);
+            if (piece != null) {
+                if (sauvegarde != null) {
+                    sauvegarde.add(new PieceEcrasee(piece, currX, currY));
+                }
+                grille.setPiece(null, currX, currY);
+            }
+            currX += stepX;
+            currY += stepY;
         }
     }
 
@@ -399,6 +436,7 @@ public class Game {
         private Piece captureEnPassant;
         private int captureEnPassantX = -1;
         private int captureEnPassantY = -1;
+        private final List<PieceEcrasee> piecesEcrasees = new ArrayList<>();
         private Piece rook;
         private int rookStartX = -1;
         private int rookEndX = -1;
@@ -409,6 +447,18 @@ public class Game {
             this.startY = startY;
             this.endX = endX;
             this.endY = endY;
+        }
+    }
+
+    private static class PieceEcrasee {
+        private final Piece piece;
+        private final int x;
+        private final int y;
+
+        private PieceEcrasee(Piece piece, int x, int y) {
+            this.piece = piece;
+            this.x = x;
+            this.y = y;
         }
     }
 }

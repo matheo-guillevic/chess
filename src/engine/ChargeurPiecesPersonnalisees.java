@@ -146,7 +146,9 @@ public class ChargeurPiecesPersonnalisees {
                 asString(reglesMap.get("description")),
                 valueOrZero(asInteger(reglesMap.get("distanceMaxLigne"))),
                 valueOrZero(asInteger(reglesMap.get("distanceMaxDiagonale"))),
-                Boolean.TRUE.equals(reglesMap.get("peutSauter"))
+                Boolean.TRUE.equals(reglesMap.get("peutSauter")),
+                Boolean.TRUE.equals(reglesMap.get("ecraseLigne")),
+                Boolean.TRUE.equals(reglesMap.get("deplacementCavalier"))
         );
 
         String symbole = convertirSymbole(asString(definition.get("codeUnicode")));

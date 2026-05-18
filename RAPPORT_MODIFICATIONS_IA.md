@@ -16,3 +16,4 @@ Il sera mis a jour a chaque prochaine modification de code.
 - Modification du demarrage : choix du mode GUI ou CLI depuis `Main`, avec `--gui` et `--cli` disponibles.
 - Ajout et subdivision des tests automatises par domaine : regles de base, mouvements speciaux, JSON et IA.
 - Mise a jour des scripts `run.sh`, `run_gui.sh` et `run_tests.sh` pour compiler, copier les ressources et transmettre les arguments.
+- Ajout des pieces personnalisees Bus et Minotaure, avec nouvelles regles JSON `ecraseLigne` et `deplacementCavalier`, plus tests dedies.
