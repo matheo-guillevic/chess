@@ -1,0 +1,34 @@
+{
+  "piecesPersonnalisees": [
+    {
+      "nom": "Lion Blanc",
+      "codeUnicode": "0x265E",
+      "couleur": "BLANC",
+      "positionInitiale": {
+        "x": 3,
+        "y": 2
+      },
+      "reglesDeplacement": {
+        "description": "Se déplace de 2 cases dans n'importe quelle direction et peut sauter les autres pièces",
+        "distanceMaxLigne": 2,
+        "distanceMaxDiagonale": 2,
+        "peutSauter": true
+      }
+    },
+    {
+      "nom": "Lion Noir",
+      "codeUnicode": "0x265E",
+      "couleur": "NOIR",
+      "positionInitiale": {
+        "x": 3,
+        "y": 5
+      },
+      "reglesDeplacement": {
+        "description": "Se déplace de 2 cases dans n'importe quelle direction et peut sauter les autres pièces",
+        "distanceMaxLigne": 2,
+        "distanceMaxDiagonale": 2,
+        "peutSauter": true
+      }
+    }
+  ]
+}

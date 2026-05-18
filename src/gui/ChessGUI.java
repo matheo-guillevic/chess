@@ -113,6 +113,7 @@ public class ChessGUI extends JFrame {
                 selectedX = x;
                 selectedY = y;
                 buttons[x][y].setBackground(new Color(255, 235, 59)); // Jaune vif pour la sélection
+                showValidMoves(piece);
             }
         } else {
             // Un clic sur la même case annule la sélection
@@ -147,6 +148,7 @@ public class ChessGUI extends JFrame {
                     selectedX = x;
                     selectedY = y;
                     buttons[x][y].setBackground(new Color(255, 235, 59));
+                    showValidMoves(target);
                 } else {
                     selectedX = -1;
                     selectedY = -1;
@@ -156,13 +158,41 @@ public class ChessGUI extends JFrame {
         }
     }
 
+    private void showValidMoves(Piece piece) {
+        for (int y = 7; y >= 0; y--) {
+            for (int x = 0; x < 8; x++) {
+                if (piece.isValidMove(x, y, game.getGrille())) {
+                    Piece target = game.getGrille().getPiece(x, y);
+                    Color baseColor = ((x + y) % 2 == 0) ? new Color(181, 136, 99) : new Color(240, 217, 181);
+                    
+                    if (target != null) {
+                        // Capture possible : rouge transparent (60%)
+                        buttons[x][y].setBackground(blend(new Color(244, 67, 54), baseColor, 0.6f)); 
+                    } else {
+                        // Déplacement possible : vert transparent (50%)
+                        buttons[x][y].setBackground(blend(new Color(139, 195, 74), baseColor, 0.5f)); 
+                    }
+                }
+            }
+        }
+    }
+
+    private Color blend(Color c1, Color c2, float ratio) {
+        int r = (int) (c1.getRed() * ratio + c2.getRed() * (1 - ratio));
+        int g = (int) (c1.getGreen() * ratio + c2.getGreen() * (1 - ratio));
+        int b = (int) (c1.getBlue() * ratio + c2.getBlue() * (1 - ratio));
+        return new Color(Math.min(255, Math.max(0, r)), 
+                         Math.min(255, Math.max(0, g)), 
+                         Math.min(255, Math.max(0, b)));
+    }
+
     private void resetBackgrounds() {
         for (int y = 7; y >= 0; y--) {
             for (int x = 0; x < 8; x++) {
                 if ((x + y) % 2 == 0) {
-                    buttons[x][y].setBackground(new Color(118, 150, 86)); // Vert classique
+                    buttons[x][y].setBackground(new Color(181, 136, 99)); // Marron
                 } else {
-                    buttons[x][y].setBackground(new Color(238, 238, 210)); // Crème classique
+                    buttons[x][y].setBackground(new Color(240, 217, 181)); // Crème
                 }
             }
         }

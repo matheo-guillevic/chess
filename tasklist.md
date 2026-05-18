@@ -44,19 +44,19 @@ Ce document regroupe l'ensemble des tâches à effectuer pour réaliser le proje
 ## 🚀 Partie 2 : Pièces Personnalisées via JSON
 
 ### 1. Intégration du JSON
-- [ ] Ajouter une librairie de traitement JSON au projet (ex: **GSON** ou **Jackson**).
-- [ ] Définir le schéma JSON pour la déclaration d'une pièce personnalisée (Nom, Code Unicode, Couleur, Position initiale, Règles de déplacement).
-- [ ] Créer un ou plusieurs fichiers `.json` d'exemple (ex: ajouter le "LION").
+- [x] Ajouter une librairie de traitement JSON au projet (ex: **GSON** ou **Jackson**).
+- [x] Définir le schéma JSON pour la déclaration d'une pièce personnalisée (Nom, Code Unicode, Couleur, Position initiale, Règles de déplacement).
+- [x] Créer un ou plusieurs fichiers `.json` d'exemple (ex: ajouter le "LION").
 
 ### 2. Lecture et Désérialisation
-- [ ] Ajouter une étape au lancement de l'application : "Voulez-vous charger un fichier de pièces personnalisées ?".
-- [ ] Lire le fichier JSON et désérialiser les objets.
-- [ ] Placer ces nouvelles pièces sur le plateau au début de la partie sans écraser la logique existante.
+- [x] Ajouter une étape au lancement de l'application : "Voulez-vous charger un fichier de pièces personnalisées ?".
+- [x] Lire le fichier JSON et désérialiser les objets.
+- [x] Placer ces nouvelles pièces sur le plateau au début de la partie sans écraser la logique existante.
 
 ### 3. Moteur de règles dynamiques
-- [ ] Créer une classe `PiecePersonnalisee` héritant de `Piece`.
-- [ ] Traduire les règles lues dans le JSON en algorithmes de validation de mouvement (ex: se déplace de `x` cases en diagonale, peut sauter, etc.).
-- [ ] Valider que les règles générées fonctionnent avec le système de mouvement de la Partie 1.
+- [x] Créer une classe `PiecePersonnalisee` héritant de `Piece`.
+- [x] Traduire les règles lues dans le JSON en algorithmes de validation de mouvement (ex: se déplace de `x` cases en diagonale, peut sauter, etc.).
+- [x] Valider que les règles générées fonctionnent avec le système de mouvement de la Partie 1.
 
 ---
 
@@ -71,9 +71,9 @@ Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totaleme
 - [ ] Gestion de la promotion du Pion arrivé sur la dernière ligne.
 
 ### 2. Interface Graphique
-- [ ] Intégrer une librairie graphique (comme Swing, JavaFX ou autre).
-- [ ] Rendre l'échiquier cliquable (sélection d'une case de départ puis d'une case d'arrivée).
-- [ ] Afficher les pièces avec des images ou de belles polices Unicode dans la fenêtre.
+- [x] Intégrer une librairie graphique (comme Swing, JavaFX ou autre).
+- [x] Rendre l'échiquier cliquable (sélection d'une case de départ puis d'une case d'arrivée).
+- [x] Afficher les pièces avec des images ou de belles polices Unicode dans la fenêtre.
 
 ### 3. Intelligence Artificielle (IA)
 - [ ] Implémenter un mode "Joueur vs Ordinateur".

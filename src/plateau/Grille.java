@@ -22,6 +22,14 @@ public class Grille {
         return board[x][y];
     }
 
+    public boolean isInside(int x, int y) {
+        return x >= 0 && x <= 7 && y >= 0 && y <= 7;
+    }
+
+    public boolean isEmpty(int x, int y) {
+        return isInside(x, y) && board[x][y] == null;
+    }
+
     public void movePiece(int startX, int startY, int endX, int endY) {
         Piece piece = getPiece(startX, startY);
         setPiece(null, startX, startY);

@@ -3,6 +3,8 @@ package engine;
 import piece.*;
 import plateau.Grille;
 
+import java.nio.file.Path;
+
 public class Game {
     private final Grille grille;
     private Couleur currentTurn;
@@ -20,6 +22,10 @@ public class Game {
     public Couleur getCurrentTurn() { return currentTurn; }
     public boolean isFinished() { return isFinished; }
     public Couleur getWinner() { return winner; }
+
+    public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier) {
+        return new ChargeurPiecesPersonnalisees().charger(fichier, grille);
+    }
 
     public void initPiece() {
         // Pièces Blanches (y = 0 et 1)
