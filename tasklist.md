@@ -79,3 +79,7 @@ Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totaleme
 - [x] Implémenter un mode "Joueur vs Ordinateur".
 - [x] Mettre en place un algorithme basique (ex: choix aléatoire parmi les coups valides).
 - [x] (Avancé) Mettre en place un algorithme MinMax avec Alpha-Beta Pruning pour évaluer les meilleurs coups.
+
+### 4. Tests automatisés
+- [x] Ajouter un jeu de tests du moteur d'échecs.
+- [x] Couvrir les mouvements de base, l'échec, le roque, la prise en passant, la promotion, les pièces JSON et l'IA.
