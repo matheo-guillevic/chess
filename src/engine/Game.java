@@ -56,13 +56,17 @@ public class Game {
     }
 
     public boolean tryMove(int startX, int startY, int endX, int endY) {
+        return tryMove(startX, startY, endX, endY, "reine");
+    }
+
+    public boolean tryMove(int startX, int startY, int endX, int endY, String promotion) {
         if (isFinished) return false;
 
         Piece piece = grille.getPiece(startX, startY);
         if (piece == null || piece.getCouleur() != currentTurn) return false;
         if (!isLegalMove(startX, startY, endX, endY, currentTurn)) return false;
 
-        executerDeplacement(startX, startY, endX, endY, true);
+        executerDeplacement(startX, startY, endX, endY, promotion);
         currentTurn = adversaire(currentTurn);
         mettreAJourFinDePartie();
         return true;
@@ -223,7 +227,7 @@ public class Game {
         }
     }
 
-    private void executerDeplacement(int startX, int startY, int endX, int endY, boolean promotionAutomatique) {
+    private void executerDeplacement(int startX, int startY, int endX, int endY, String promotion) {
         Piece piece = grille.getPiece(startX, startY);
         boolean priseEnPassant = isPriseEnPassantValide(piece, startX, startY, endX, endY);
         boolean roque = isRoqueValide(piece, startX, startY, endX, endY);
@@ -253,9 +257,25 @@ public class Game {
             caseEnPassantY = (startY + endY) / 2;
         }
 
-        if (promotionAutomatique && piece instanceof Pion && (endY == 0 || endY == 7)) {
-            grille.setPiece(new Reine(endX, endY, piece.getCouleur()), endX, endY);
-            grille.getPiece(endX, endY).setADejaBouge(true);
+        if (piece instanceof Pion && (endY == 0 || endY == 7)) {
+            Piece piecePromue = creerPiecePromotion(promotion, endX, endY, piece.getCouleur());
+            grille.setPiece(piecePromue, endX, endY);
+            piecePromue.setADejaBouge(true);
+        }
+    }
+
+    private Piece creerPiecePromotion(String promotion, int x, int y, Couleur couleur) {
+        String choix = promotion == null ? "reine" : promotion.trim().toLowerCase();
+        switch (choix) {
+            case "tour":
+                return new Tour(x, y, couleur);
+            case "fou":
+                return new Fou(x, y, couleur);
+            case "cavalier":
+                return new Cavalier(x, y, couleur);
+            case "reine":
+            default:
+                return new Reine(x, y, couleur);
         }
     }
 

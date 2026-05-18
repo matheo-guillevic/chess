@@ -31,6 +31,7 @@ public class ChessEngineTest {
         testEnPassant();
         testEnPassantOnlyImmediate();
         testPromotion();
+        testPromotionChoice();
         testBlackPromotion();
         testCustomJsonPieces();
         testAutomaticPlayer();
@@ -145,6 +146,19 @@ public class ChessEngineTest {
 
         assertTrue("promotion du pion blanc en a8", game.tryMove(0, 6, 0, 7));
         assertTrue("le pion promu devient une reine", grille.getPiece(0, 7) instanceof Reine);
+    }
+
+    private void testPromotionChoice() {
+        Game game = new Game();
+        Grille grille = game.getGrille();
+        clearBoard(grille);
+
+        grille.setPiece(new Roi(4, 0, Couleur.BLANC), 4, 0);
+        grille.setPiece(new Roi(7, 7, Couleur.NOIR), 7, 7);
+        grille.setPiece(new Pion(1, 6, Couleur.BLANC), 1, 6);
+
+        assertTrue("promotion choisie en cavalier", game.tryMove(1, 6, 1, 7, "cavalier"));
+        assertTrue("le pion promu devient un cavalier", grille.getPiece(1, 7) instanceof piece.Cavalier);
     }
 
     private void testBlackPromotion() {

@@ -6,6 +6,13 @@ public class ReglesDeplacement {
     private int distanceMaxDiagonale;
     private boolean peutSauter;
 
+    public ReglesDeplacement(String description, int distanceMaxLigne, int distanceMaxDiagonale, boolean peutSauter) {
+        this.description = description;
+        this.distanceMaxLigne = distanceMaxLigne;
+        this.distanceMaxDiagonale = distanceMaxDiagonale;
+        this.peutSauter = peutSauter;
+    }
+
     public String getDescription() {
         return description;
     }
