@@ -65,10 +65,10 @@ Ce document regroupe l'ensemble des tâches à effectuer pour réaliser le proje
 Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totalement terminées et fonctionnelles.
 
 ### 1. Mouvements Complexes
-- [ ] Gestion de l'échec au Roi (interdire un mouvement qui met son propre roi en échec).
-- [ ] Gestion du roque (petit roque et grand roque).
-- [ ] Gestion de la prise en passant du Pion.
-- [ ] Gestion de la promotion du Pion arrivé sur la dernière ligne.
+- [x] Gestion de l'échec au Roi (interdire un mouvement qui met son propre roi en échec).
+- [x] Gestion du roque (petit roque et grand roque).
+- [x] Gestion de la prise en passant du Pion.
+- [x] Gestion de la promotion du Pion arrivé sur la dernière ligne.
 
 ### 2. Interface Graphique
 - [x] Intégrer une librairie graphique (comme Swing, JavaFX ou autre).
@@ -76,6 +76,6 @@ Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totaleme
 - [x] Afficher les pièces avec des images ou de belles polices Unicode dans la fenêtre.
 
 ### 3. Intelligence Artificielle (IA)
-- [ ] Implémenter un mode "Joueur vs Ordinateur".
-- [ ] Mettre en place un algorithme basique (ex: choix aléatoire parmi les coups valides).
-- [ ] (Avancé) Mettre en place un algorithme MinMax avec Alpha-Beta Pruning pour évaluer les meilleurs coups.
+- [x] Implémenter un mode "Joueur vs Ordinateur".
+- [x] Mettre en place un algorithme basique (ex: choix aléatoire parmi les coups valides).
+- [x] (Avancé) Mettre en place un algorithme MinMax avec Alpha-Beta Pruning pour évaluer les meilleurs coups.

@@ -2,6 +2,7 @@ import javax.swing.SwingUtilities;
 import gui.ChessGUI;
 import engine.ChargementPiecesResultat;
 import engine.Game;
+import piece.Couleur;
 
 import java.nio.file.Path;
 
@@ -10,6 +11,7 @@ public class Main {
         Game game = new Game();
 
         boolean useGui = hasArg(args, "--gui");
+        Couleur couleurIA = getCouleurIA(args);
         Path fichierPieces = getArgValue(args, "--pieces");
         if (fichierPieces != null) {
             afficherResultatChargement(game.chargerPiecesPersonnalisees(fichierPieces));
@@ -23,7 +25,7 @@ public class Main {
             });
         } else {
             // Lancement en mode console
-            cli.ConsoleUI console = new cli.ConsoleUI(game, fichierPieces == null);
+            cli.ConsoleUI console = new cli.ConsoleUI(game, fichierPieces == null, couleurIA);
             console.start();
         }
     }
@@ -39,6 +41,12 @@ public class Main {
         for (int i = 0; i < args.length - 1; i++) {
             if (args[i].equals(arg)) return Path.of(args[i + 1]);
         }
+        return null;
+    }
+
+    private static Couleur getCouleurIA(String[] args) {
+        if (hasArg(args, "--ai-white")) return Couleur.BLANC;
+        if (hasArg(args, "--ai") || hasArg(args, "--ai-black")) return Couleur.NOIR;
         return null;
     }
 

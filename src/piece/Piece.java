@@ -20,6 +20,7 @@ public abstract class Piece {
     protected int x;
     protected int y;
     protected final Couleur couleur;
+    private boolean aDejaBouge;
 
     public Piece(int x, int y, Couleur couleur) {
         this.x = x;
@@ -32,6 +33,8 @@ public abstract class Piece {
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
     public Couleur getCouleur() { return couleur; }
+    public boolean aDejaBouge() { return aDejaBouge; }
+    public void setADejaBouge(boolean aDejaBouge) { this.aDejaBouge = aDejaBouge; }
 
     public abstract boolean isValidMove(int newX, int newY, Grille grille);
     public abstract String getSymbol();

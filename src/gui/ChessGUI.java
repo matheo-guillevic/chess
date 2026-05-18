@@ -2,11 +2,9 @@ package gui;
 
 import piece.Piece;
 import piece.Couleur;
+import engine.Coup;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import engine.Game;
 
 public class ChessGUI extends JFrame {
@@ -134,10 +132,15 @@ public class ChessGUI extends JFrame {
                 updateBoardDisplay();
                 
                 if (game.isFinished()) {
-                    JOptionPane.showMessageDialog(this, "Échec et Mat ! Le joueur " + game.getWinner() + " a gagné !");
-                    setTitle("Jeu d'Echecs - " + game.getWinner() + " GAGNE !");
+                    if (game.getWinner() == null) {
+                        JOptionPane.showMessageDialog(this, "Pat : match nul.");
+                        setTitle("Jeu d'Echecs - Match nul");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Échec et Mat ! Le joueur " + game.getWinner() + " a gagné !");
+                        setTitle("Jeu d'Echecs - " + game.getWinner() + " GAGNE !");
+                    }
                 } else {
-                    setTitle("Jeu d'Echecs - Tour : " + game.getCurrentTurn());
+                    updateTitle();
                 }
             } else {
                 // Coup invalide, mais est-ce une autre de nos pièces ?
@@ -159,19 +162,17 @@ public class ChessGUI extends JFrame {
     }
 
     private void showValidMoves(Piece piece) {
-        for (int y = 7; y >= 0; y--) {
-            for (int x = 0; x < 8; x++) {
-                if (piece.isValidMove(x, y, game.getGrille())) {
-                    Piece target = game.getGrille().getPiece(x, y);
-                    Color baseColor = ((x + y) % 2 == 0) ? new Color(181, 136, 99) : new Color(240, 217, 181);
-                    
-                    if (target != null) {
-                        // Capture possible : rouge transparent (60%)
-                        buttons[x][y].setBackground(blend(new Color(244, 67, 54), baseColor, 0.6f)); 
-                    } else {
-                        // Déplacement possible : vert transparent (50%)
-                        buttons[x][y].setBackground(blend(new Color(139, 195, 74), baseColor, 0.5f)); 
-                    }
+        for (Coup coup : game.getCoupsValides(game.getCurrentTurn())) {
+            if (coup.getStartX() == piece.getX() && coup.getStartY() == piece.getY()) {
+                int x = coup.getEndX();
+                int y = coup.getEndY();
+                Piece target = game.getGrille().getPiece(x, y);
+                Color baseColor = ((x + y) % 2 == 0) ? new Color(181, 136, 99) : new Color(240, 217, 181);
+
+                if (target != null) {
+                    buttons[x][y].setBackground(blend(new Color(244, 67, 54), baseColor, 0.6f));
+                } else {
+                    buttons[x][y].setBackground(blend(new Color(139, 195, 74), baseColor, 0.5f));
                 }
             }
         }
@@ -214,5 +215,14 @@ public class ChessGUI extends JFrame {
                 }
             }
         }
+        updateTitle();
+    }
+
+    private void updateTitle() {
+        String titre = "Jeu d'Echecs - Tour : " + game.getCurrentTurn();
+        if (game.isKingInCheck(game.getCurrentTurn())) {
+            titre += " (echec)";
+        }
+        setTitle(titre);
     }
 }
