@@ -24,10 +24,14 @@ public class ChessEngineTest {
     private void run() {
         testInitialBoard();
         testBasicPawnMove();
+        testClassicCapture();
         testCheckBlocksUnrelatedMove();
         testCastling();
+        testQueensideCastling();
         testEnPassant();
+        testEnPassantOnlyImmediate();
         testPromotion();
+        testBlackPromotion();
         testCustomJsonPieces();
         testAutomaticPlayer();
 
@@ -51,6 +55,17 @@ public class ChessEngineTest {
         assertTrue("e2 e4 est legal", game.tryMove(4, 1, 4, 3));
         assertTrue("le pion blanc arrive en e4", game.getGrille().getPiece(4, 3) instanceof Pion);
         assertEquals("le trait passe aux noirs", Couleur.NOIR, game.getCurrentTurn());
+    }
+
+    private void testClassicCapture() {
+        Game game = new Game();
+
+        play(game, "e2 e4");
+        play(game, "d7 d5");
+
+        assertTrue("capture classique e4xd5", game.tryMove(4, 3, 3, 4));
+        assertTrue("le pion blanc occupe d5 apres capture", game.getGrille().getPiece(3, 4) instanceof Pion);
+        assertEquals("la piece capturee etait noire", Couleur.BLANC, game.getGrille().getPiece(3, 4).getCouleur());
     }
 
     private void testCheckBlocksUnrelatedMove() {
@@ -79,6 +94,20 @@ public class ChessEngineTest {
         assertTrue("tour blanche en f1 apres roque", game.getGrille().getPiece(5, 0) != null);
     }
 
+    private void testQueensideCastling() {
+        Game game = new Game();
+        Grille grille = game.getGrille();
+        clearBoard(grille);
+
+        grille.setPiece(new Roi(4, 0, Couleur.BLANC), 4, 0);
+        grille.setPiece(new piece.Tour(0, 0, Couleur.BLANC), 0, 0);
+        grille.setPiece(new Roi(4, 7, Couleur.NOIR), 4, 7);
+
+        assertTrue("grand roque blanc legal", game.tryMove(4, 0, 2, 0));
+        assertTrue("roi blanc en c1 apres grand roque", grille.getPiece(2, 0) instanceof Roi);
+        assertTrue("tour blanche en d1 apres grand roque", grille.getPiece(3, 0) instanceof piece.Tour);
+    }
+
     private void testEnPassant() {
         Game game = new Game();
 
@@ -92,6 +121,19 @@ public class ChessEngineTest {
         assertNull("pion noir capture en d5", game.getGrille().getPiece(3, 4));
     }
 
+    private void testEnPassantOnlyImmediate() {
+        Game game = new Game();
+
+        play(game, "e2 e4");
+        play(game, "a7 a6");
+        play(game, "e4 e5");
+        play(game, "d7 d5");
+        play(game, "h2 h3");
+        play(game, "a6 a5");
+
+        assertFalse("prise en passant refusee si elle n'est pas immediate", game.tryMove(4, 4, 3, 5));
+    }
+
     private void testPromotion() {
         Game game = new Game();
         Grille grille = game.getGrille();
@@ -103,6 +145,21 @@ public class ChessEngineTest {
 
         assertTrue("promotion du pion blanc en a8", game.tryMove(0, 6, 0, 7));
         assertTrue("le pion promu devient une reine", grille.getPiece(0, 7) instanceof Reine);
+    }
+
+    private void testBlackPromotion() {
+        Game game = new Game();
+        Grille grille = game.getGrille();
+        clearBoard(grille);
+
+        grille.setPiece(new Roi(4, 0, Couleur.BLANC), 4, 0);
+        grille.setPiece(new Roi(0, 7, Couleur.NOIR), 0, 7);
+        grille.setPiece(new Pion(7, 1, Couleur.NOIR), 7, 1);
+
+        play(game, "e1 e2");
+        assertTrue("promotion du pion noir en h1", game.tryMove(7, 1, 7, 0));
+        assertTrue("le pion noir promu devient une reine", grille.getPiece(7, 0) instanceof Reine);
+        assertEquals("la reine promue est noire", Couleur.NOIR, grille.getPiece(7, 0).getCouleur());
     }
 
     private void testCustomJsonPieces() {

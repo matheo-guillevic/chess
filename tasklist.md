@@ -82,4 +82,5 @@ Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totaleme
 
 ### 4. Tests automatisés
 - [x] Ajouter un jeu de tests du moteur d'échecs.
-- [x] Couvrir les mouvements de base, l'échec, le roque, la prise en passant, la promotion, les pièces JSON et l'IA.
+- [x] Couvrir les mouvements de base, les captures, l'échec, le roque, la prise en passant, la promotion, les pièces JSON et l'IA.
+- [x] Documenter les mouvements spéciaux.
