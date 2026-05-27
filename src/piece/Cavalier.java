@@ -1,5 +1,5 @@
 package piece;
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Piece de type cavalier.
@@ -12,21 +12,21 @@ public class Cavalier extends Piece {
      *
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur du cavalier
+     * @param color couleur du cavalier
      */
-    public Cavalier(int x, int y, Couleur couleur) { super(x, y, couleur); }
+    public Cavalier(int x, int y, Color color) { super(x, y, color); }
 
     @Override
-    public boolean isValidMove(int newX, int newY, Grille grille) {
+    public boolean isValidMove(int newX, int newY, Grid grid) {
         if ((Math.abs(newX - x) == 2 && Math.abs(newY - y) == 1) || 
             (Math.abs(newX - x) == 1 && Math.abs(newY - y) == 2)) {
-            return isDestinationValid(newX, newY, grille);
+            return isDestinationValid(newX, newY, grid);
         }
         return false;
     }
 
     @Override
     public String getSymbol() { 
-        return new String(Character.toChars(couleur == Couleur.BLANC ? KNIGHT_WHITE : KNIGHT_BLACK)); 
+        return new String(Character.toChars(color == Color.BLANC ? KNIGHT_WHITE : KNIGHT_BLACK));
     }
 }

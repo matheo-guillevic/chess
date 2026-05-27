@@ -1,5 +1,5 @@
 package piece;
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Piece de type roi.
@@ -13,18 +13,18 @@ public class Roi extends Piece {
      *
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur du roi
+     * @param color couleur du roi
      */
-    public Roi(int x, int y, Couleur couleur) { super(x, y, couleur); }
+    public Roi(int x, int y, Color color) { super(x, y, color); }
 
     @Override
-    public boolean isValidMove(int newX, int newY, Grille grille) {
+    public boolean isValidMove(int newX, int newY, Grid grid) {
         if (Math.abs(newX - x) > 1 || Math.abs(newY - y) > 1) return false;
-        return isDestinationValid(newX, newY, grille);
+        return isDestinationValid(newX, newY, grid);
     }
 
     @Override
     public String getSymbol() { 
-        return new String(Character.toChars(couleur == Couleur.BLANC ? KING_WHITE : KING_BLACK)); 
+        return new String(Character.toChars(color == Color.BLANC ? KING_WHITE : KING_BLACK));
     }
 }

@@ -1,8 +1,9 @@
 import javax.swing.SwingUtilities;
-import gui.ChessGUI;
+
 import engine.Game;
+import gui.ChessGUI;
 import json.ChargementPiecesResultat;
-import piece.Couleur;
+import piece.Color;
 
 import java.nio.file.Path;
 import java.util.Scanner;
@@ -33,7 +34,7 @@ public class Main {
         Game game = new Game();
 
         boolean useCli = choisirModeCli(args);
-        Couleur couleurIA = getCouleurIA(args);
+        Color colorIA = getCouleurIA(args);
         Path fichierPieces = getArgValue(args, "--pieces");
         if (fichierPieces != null) {
             afficherResultatChargement(game.chargerPiecesPersonnalisees(fichierPieces));
@@ -41,12 +42,12 @@ public class Main {
 
         if (useCli) {
             // Lancement en mode console
-            cli.ConsoleUI console = new cli.ConsoleUI(game, fichierPieces == null, couleurIA);
+            cli.ConsoleUI console = new cli.ConsoleUI(game, fichierPieces == null, colorIA);
             console.start();
         } else {
             // Lancement en mode graphique
             SwingUtilities.invokeLater(() -> {
-                ChessGUI gui = new ChessGUI(game, couleurIA);
+                ChessGUI gui = new ChessGUI(game, colorIA);
                 gui.setVisible(true);
             });
         }
@@ -85,9 +86,9 @@ public class Main {
         return null;
     }
 
-    private static Couleur getCouleurIA(String[] args) {
-        if (hasArg(args, "--ai-white")) return Couleur.BLANC;
-        if (hasArg(args, "--ai") || hasArg(args, "--ai-black")) return Couleur.NOIR;
+    private static Color getCouleurIA(String[] args) {
+        if (hasArg(args, "--ai-white")) return Color.BLANC;
+        if (hasArg(args, "--ai") || hasArg(args, "--ai-black")) return Color.NOIR;
         return null;
     }
 

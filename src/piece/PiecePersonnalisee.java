@@ -1,6 +1,6 @@
 package piece;
 
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Piece chargee depuis un fichier JSON.
@@ -22,11 +22,11 @@ public class PiecePersonnalisee extends Piece {
      * @param symbole symbole texte ou Unicode
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur de la piece
+     * @param color couleur de la piece
      * @param regles regles dynamiques de deplacement
      */
-    public PiecePersonnalisee(String nom, String symbole, int x, int y, Couleur couleur, ReglesDeplacement regles) {
-        this(nom, symbole, null, x, y, couleur, regles);
+    public PiecePersonnalisee(String nom, String symbole, int x, int y, Color color, ReglesDeplacement regles) {
+        this(nom, symbole, null, x, y, color, regles);
     }
 
     /**
@@ -37,11 +37,11 @@ public class PiecePersonnalisee extends Piece {
      * @param image chemin de l'image, ou {@code null} si aucun fichier n'est defini
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur de la piece
+     * @param color couleur de la piece
      * @param regles regles dynamiques de deplacement
      */
-    public PiecePersonnalisee(String nom, String symbole, String image, int x, int y, Couleur couleur, ReglesDeplacement regles) {
-        super(x, y, couleur);
+    public PiecePersonnalisee(String nom, String symbole, String image, int x, int y, Color color, ReglesDeplacement regles) {
+        super(x, y, color);
         this.nom = nom;
         this.symbole = symbole;
         this.image = image;
@@ -76,9 +76,9 @@ public class PiecePersonnalisee extends Piece {
     }
 
     @Override
-    public boolean isValidMove(int newX, int newY, Grille grille) {
-        if (!grille.isInside(newX, newY)) return false;
-        if (!isDestinationValid(newX, newY, grille)) return false;
+    public boolean isValidMove(int newX, int newY, Grid grid) {
+        if (!grid.isInside(newX, newY)) return false;
+        if (!isDestinationValid(newX, newY, grid)) return false;
 
         int deltaX = Math.abs(newX - x);
         int deltaY = Math.abs(newY - y);
@@ -105,8 +105,8 @@ public class PiecePersonnalisee extends Piece {
 
         if (!deplacementValide) return false;
         if (utiliseSautCavalier) return true;
-        if (regles.ecraseLigne() && ligneDroite) return isPathCrushable(newX, newY, grille);
-        return regles.peutSauter() || isPathClear(newX, newY, grille);
+        if (regles.ecraseLigne() && ligneDroite) return isPathCrushable(newX, newY, grid);
+        return regles.peutSauter() || isPathClear(newX, newY, grid);
     }
 
     /**
@@ -117,15 +117,15 @@ public class PiecePersonnalisee extends Piece {
         return symbole;
     }
 
-    private boolean isPathCrushable(int endX, int endY, Grille grille) {
+    private boolean isPathCrushable(int endX, int endY, Grid grid) {
         int stepX = Integer.compare(endX, x);
         int stepY = Integer.compare(endY, y);
 
         int currX = x + stepX;
         int currY = y + stepY;
         while (currX != endX || currY != endY) {
-            Piece piece = grille.getPiece(currX, currY);
-            if (piece != null && piece.getCouleur() == couleur) return false;
+            Piece piece = grid.getPiece(currX, currY);
+            if (piece != null && piece.getCouleur() == color) return false;
             if (piece instanceof Roi) return false;
             currX += stepX;
             currY += stepY;

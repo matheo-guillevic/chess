@@ -1,5 +1,5 @@
 package piece;
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Piece de type tour.
@@ -13,15 +13,15 @@ public class Tour extends Piece {
      *
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur de la tour
+     * @param color couleur de la tour
      */
-    public Tour(int x, int y, Couleur couleur) { super(x, y, couleur); }
+    public Tour(int x, int y, Color color) { super(x, y, color); }
 
     @Override
-    public boolean isValidMove(int newX, int newY, Grille grille) {
+    public boolean isValidMove(int newX, int newY, Grid grid) {
         if (x != newX && y != newY) return false;
-        if (!isPathClear(newX, newY, grille)) return false;
-        return isDestinationValid(newX, newY, grille);
+        if (!isPathClear(newX, newY, grid)) return false;
+        return isDestinationValid(newX, newY, grid);
     }
 
     /**
@@ -29,6 +29,6 @@ public class Tour extends Piece {
      */
     @Override
     public String getSymbol() { 
-        return new String(Character.toChars(couleur == Couleur.BLANC ? ROOK_WHITE : ROOK_BLACK)); 
+        return new String(Character.toChars(color == Color.BLANC ? ROOK_WHITE : ROOK_BLACK));
     }
 }

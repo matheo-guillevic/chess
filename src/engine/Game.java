@@ -4,7 +4,7 @@ import json.ChargementPiecesResultat;
 import json.ChargeurPiecesPersonnalisees;
 import json.PiecePersonnaliseeInfo;
 import piece.*;
-import plateau.Grille;
+import plateau.Grid;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -20,13 +20,13 @@ import java.util.Set;
  */
 public class Game {
     /** Plateau contenant les pieces de la partie. */
-    private final Grille grille;
+    private final Grid grid;
     /** Couleur du joueur qui doit jouer. */
-    private Couleur currentTurn;
+    private Color currentTurn;
     /** Indique si la partie est terminee par mat ou pat. */
     private boolean isFinished;
     /** Couleur gagnante, ou {@code null} si la partie est nulle ou en cours. */
-    private Couleur winner;
+    private Color winner;
     /** Pion pouvant etre capture en passant au prochain coup uniquement. */
     private Piece pionVulnerableEnPassant;
     /** Colonne de la case d'arrivee autorisee pour une prise en passant. */
@@ -42,8 +42,8 @@ public class Game {
     }
 
     private Game(boolean initialiserPieces) {
-        this.grille = new Grille();
-        this.currentTurn = Couleur.BLANC;
+        this.grid = new Grid();
+        this.currentTurn = Color.BLANC;
         this.isFinished = false;
         if (initialiserPieces) {
             initPiece();
@@ -55,13 +55,13 @@ public class Game {
      *
      * @return grille courante de la partie
      */
-    public Grille getGrille() { return grille; }
+    public Grid getGrid() { return grid; }
     /**
      * Renvoie le joueur actif.
      *
      * @return couleur dont c'est le tour
      */
-    public Couleur getCurrentTurn() { return currentTurn; }
+    public Color getCurrentTurn() { return currentTurn; }
     /**
      * Indique si la partie est terminee.
      *
@@ -73,7 +73,7 @@ public class Game {
      *
      * @return couleur gagnante, ou {@code null} en cas de pat ou partie non terminee
      */
-    public Couleur getWinner() { return winner; }
+    public Color getWinner() { return winner; }
 
     /**
      * Cree une copie independante de la partie courante.
@@ -93,11 +93,11 @@ public class Game {
 
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                Piece piece = grille.getPiece(x, y);
+                Piece piece = grid.getPiece(x, y);
                 if (piece == null) continue;
 
                 Piece pieceCopie = copierPiece(piece);
-                copie.grille.setPiece(pieceCopie, x, y);
+                copie.grid.setPiece(pieceCopie, x, y);
                 if (piece == pionVulnerableEnPassant) {
                     copie.pionVulnerableEnPassant = pieceCopie;
                 }
@@ -113,7 +113,7 @@ public class Game {
      * @return resultat du chargement
      */
     public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier) {
-        return new ChargeurPiecesPersonnalisees().charger(fichier, grille);
+        return new ChargeurPiecesPersonnalisees().charger(fichier, grid);
     }
 
     /**
@@ -124,7 +124,7 @@ public class Game {
      * @return resultat du chargement
      */
     public ChargementPiecesResultat chargerPiecesPersonnalisees(Path fichier, Set<String> nomsSelectionnes) {
-        return new ChargeurPiecesPersonnalisees().charger(fichier, grille, nomsSelectionnes);
+        return new ChargeurPiecesPersonnalisees().charger(fichier, grid, nomsSelectionnes);
     }
 
     /**
@@ -141,25 +141,25 @@ public class Game {
      * Place les pieces classiques dans leur position initiale.
      */
     public void initPiece() {
-        grille.setPiece(new Tour(0, 0, Couleur.BLANC), 0, 0);
-        grille.setPiece(new Cavalier(1, 0, Couleur.BLANC), 1, 0);
-        grille.setPiece(new Fou(2, 0, Couleur.BLANC), 2, 0);
-        grille.setPiece(new Reine(3, 0, Couleur.BLANC), 3, 0);
-        grille.setPiece(new Roi(4, 0, Couleur.BLANC), 4, 0);
-        grille.setPiece(new Fou(5, 0, Couleur.BLANC), 5, 0);
-        grille.setPiece(new Cavalier(6, 0, Couleur.BLANC), 6, 0);
-        grille.setPiece(new Tour(7, 0, Couleur.BLANC), 7, 0);
-        for (int i = 0; i < 8; i++) grille.setPiece(new Pion(i, 1, Couleur.BLANC), i, 1);
+        grid.setPiece(new Tour(0, 0, Color.BLANC), 0, 0);
+        grid.setPiece(new Cavalier(1, 0, Color.BLANC), 1, 0);
+        grid.setPiece(new Fou(2, 0, Color.BLANC), 2, 0);
+        grid.setPiece(new Reine(3, 0, Color.BLANC), 3, 0);
+        grid.setPiece(new Roi(4, 0, Color.BLANC), 4, 0);
+        grid.setPiece(new Fou(5, 0, Color.BLANC), 5, 0);
+        grid.setPiece(new Cavalier(6, 0, Color.BLANC), 6, 0);
+        grid.setPiece(new Tour(7, 0, Color.BLANC), 7, 0);
+        for (int i = 0; i < 8; i++) grid.setPiece(new Pion(i, 1, Color.BLANC), i, 1);
 
-        grille.setPiece(new Tour(0, 7, Couleur.NOIR), 0, 7);
-        grille.setPiece(new Cavalier(1, 7, Couleur.NOIR), 1, 7);
-        grille.setPiece(new Fou(2, 7, Couleur.NOIR), 2, 7);
-        grille.setPiece(new Reine(3, 7, Couleur.NOIR), 3, 7);
-        grille.setPiece(new Roi(4, 7, Couleur.NOIR), 4, 7);
-        grille.setPiece(new Fou(5, 7, Couleur.NOIR), 5, 7);
-        grille.setPiece(new Cavalier(6, 7, Couleur.NOIR), 6, 7);
-        grille.setPiece(new Tour(7, 7, Couleur.NOIR), 7, 7);
-        for (int i = 0; i < 8; i++) grille.setPiece(new Pion(i, 6, Couleur.NOIR), i, 6);
+        grid.setPiece(new Tour(0, 7, Color.NOIR), 0, 7);
+        grid.setPiece(new Cavalier(1, 7, Color.NOIR), 1, 7);
+        grid.setPiece(new Fou(2, 7, Color.NOIR), 2, 7);
+        grid.setPiece(new Reine(3, 7, Color.NOIR), 3, 7);
+        grid.setPiece(new Roi(4, 7, Color.NOIR), 4, 7);
+        grid.setPiece(new Fou(5, 7, Color.NOIR), 5, 7);
+        grid.setPiece(new Cavalier(6, 7, Color.NOIR), 6, 7);
+        grid.setPiece(new Tour(7, 7, Color.NOIR), 7, 7);
+        for (int i = 0; i < 8; i++) grid.setPiece(new Pion(i, 6, Color.NOIR), i, 6);
     }
 
     /**
@@ -188,7 +188,7 @@ public class Game {
     public boolean tryMove(int startX, int startY, int endX, int endY, String promotion) {
         if (isFinished) return false;
 
-        Piece piece = grille.getPiece(startX, startY);
+        Piece piece = grid.getPiece(startX, startY);
         if (piece == null || piece.getCouleur() != currentTurn) return false;
         if (!isLegalMove(startX, startY, endX, endY, currentTurn)) return false;
 
@@ -201,19 +201,19 @@ public class Game {
     /**
      * Genere tous les coups legaux d'une couleur.
      *
-     * @param couleur couleur analysee
+     * @param color couleur analysee
      * @return liste des coups autorises
      */
-    public List<Coup> getCoupsValides(Couleur couleur) {
+    public List<Coup> getCoupsValides(Color color) {
         List<Coup> coups = new ArrayList<>();
         for (int startY = 0; startY < 8; startY++) {
             for (int startX = 0; startX < 8; startX++) {
-                Piece piece = grille.getPiece(startX, startY);
-                if (piece == null || piece.getCouleur() != couleur) continue;
+                Piece piece = grid.getPiece(startX, startY);
+                if (piece == null || piece.getCouleur() != color) continue;
 
                 for (int endY = 0; endY < 8; endY++) {
                     for (int endX = 0; endX < 8; endX++) {
-                        if (isLegalMove(startX, startY, endX, endY, couleur)) {
+                        if (isLegalMove(startX, startY, endX, endY, color)) {
                             coups.add(new Coup(startX, startY, endX, endY));
                         }
                     }
@@ -226,13 +226,13 @@ public class Game {
     /**
      * Indique si le roi d'une couleur est actuellement attaque.
      *
-     * @param couleur couleur du roi a tester
+     * @param color couleur du roi a tester
      * @return {@code true} si le roi est en echec
      */
-    public boolean isKingInCheck(Couleur couleur) {
-        Piece roi = trouverRoi(couleur);
+    public boolean isKingInCheck(Color color) {
+        Piece roi = trouverRoi(color);
         if (roi == null) return false;
-        return isSquareAttacked(roi.getX(), roi.getY(), adversaire(couleur));
+        return isSquareAttacked(roi.getX(), roi.getY(), adversaire(color));
     }
 
     /**
@@ -247,21 +247,21 @@ public class Game {
      * @param startY ligne de depart
      * @param endX colonne d'arrivee
      * @param endY ligne d'arrivee
-     * @param couleur couleur du joueur qui tente le coup
+     * @param color couleur du joueur qui tente le coup
      * @return {@code true} si le coup est legal dans la position courante
      */
-    private boolean isLegalMove(int startX, int startY, int endX, int endY, Couleur couleur) {
-        if (!grille.isInside(startX, startY) || !grille.isInside(endX, endY)) return false;
+    private boolean isLegalMove(int startX, int startY, int endX, int endY, Color color) {
+        if (!grid.isInside(startX, startY) || !grid.isInside(endX, endY)) return false;
 
-        Piece piece = grille.getPiece(startX, startY);
-        if (piece == null || piece.getCouleur() != couleur) return false;
+        Piece piece = grid.getPiece(startX, startY);
+        if (piece == null || piece.getCouleur() != color) return false;
 
-        Piece destination = grille.getPiece(endX, endY);
+        Piece destination = grid.getPiece(endX, endY);
         if (destination instanceof Roi) return false;
         if (!isPseudoMoveValid(piece, startX, startY, endX, endY)) return false;
 
         EtatSimulation etat = executerSimulation(startX, startY, endX, endY);
-        boolean roiEnEchec = isKingInCheck(couleur);
+        boolean roiEnEchec = isKingInCheck(color);
         restaurerSimulation(etat);
         return !roiEnEchec;
     }
@@ -278,7 +278,7 @@ public class Game {
      *         regle speciale
      */
     private boolean isPseudoMoveValid(Piece piece, int startX, int startY, int endX, int endY) {
-        if (piece.isValidMove(endX, endY, grille)) return true;
+        if (piece.isValidMove(endX, endY, grid)) return true;
         return isRoqueValide(piece, startX, startY, endX, endY)
                 || isPriseEnPassantValide(piece, startX, startY, endX, endY);
     }
@@ -300,16 +300,16 @@ public class Game {
 
         int direction = Integer.compare(endX, startX);
         int rookX = direction > 0 ? 7 : 0;
-        Piece tour = grille.getPiece(rookX, startY);
+        Piece tour = grid.getPiece(rookX, startY);
         if (!(tour instanceof Tour) || tour.getCouleur() != piece.getCouleur() || tour.aDejaBouge()) return false;
 
         int firstEmptyX = direction > 0 ? startX + 1 : rookX + 1;
         int lastEmptyX = direction > 0 ? rookX - 1 : startX - 1;
         for (int x = firstEmptyX; x <= lastEmptyX; x++) {
-            if (grille.getPiece(x, startY) != null) return false;
+            if (grid.getPiece(x, startY) != null) return false;
         }
 
-        Couleur adversaire = adversaire(piece.getCouleur());
+        Color adversaire = adversaire(piece.getCouleur());
         return !isSquareAttacked(startX + direction, startY, adversaire)
                 && !isSquareAttacked(endX, endY, adversaire);
     }
@@ -327,12 +327,12 @@ public class Game {
     private boolean isPriseEnPassantValide(Piece piece, int startX, int startY, int endX, int endY) {
         if (!(piece instanceof Pion)) return false;
         if (pionVulnerableEnPassant == null) return false;
-        int direction = piece.getCouleur() == Couleur.BLANC ? 1 : -1;
+        int direction = piece.getCouleur() == Color.BLANC ? 1 : -1;
         return endX == caseEnPassantX
                 && endY == caseEnPassantY
                 && Math.abs(endX - startX) == 1
                 && endY == startY + direction
-                && grille.getPiece(endX, endY) == null
+                && grid.getPiece(endX, endY) == null
                 && pionVulnerableEnPassant.getX() == endX
                 && pionVulnerableEnPassant.getY() == startY
                 && pionVulnerableEnPassant.getCouleur() != piece.getCouleur();
@@ -353,16 +353,16 @@ public class Game {
      */
     private EtatSimulation executerSimulation(int startX, int startY, int endX, int endY) {
         EtatSimulation etat = new EtatSimulation(startX, startY, endX, endY);
-        Piece piece = grille.getPiece(startX, startY);
+        Piece piece = grid.getPiece(startX, startY);
         etat.piece = piece;
-        etat.capture = grille.getPiece(endX, endY);
+        etat.capture = grid.getPiece(endX, endY);
         etat.pieceAvaitBouge = piece.aDejaBouge();
 
         if (isPriseEnPassantValide(piece, startX, startY, endX, endY)) {
             etat.captureEnPassantX = endX;
             etat.captureEnPassantY = startY;
-            etat.captureEnPassant = grille.getPiece(endX, startY);
-            grille.setPiece(null, endX, startY);
+            etat.captureEnPassant = grid.getPiece(endX, startY);
+            grid.setPiece(null, endX, startY);
         }
 
         if (isEcrasementLigne(piece, startX, startY, endX, endY)) {
@@ -373,12 +373,12 @@ public class Game {
             int direction = Integer.compare(endX, startX);
             etat.rookStartX = direction > 0 ? 7 : 0;
             etat.rookEndX = startX + direction;
-            etat.rook = grille.getPiece(etat.rookStartX, startY);
+            etat.rook = grid.getPiece(etat.rookStartX, startY);
             etat.rookAvaitBouge = etat.rook.aDejaBouge();
-            grille.movePiece(etat.rookStartX, startY, etat.rookEndX, startY);
+            grid.movePiece(etat.rookStartX, startY, etat.rookEndX, startY);
         }
 
-        grille.movePiece(startX, startY, endX, endY);
+        grid.movePiece(startX, startY, endX, endY);
         return etat;
     }
 
@@ -388,21 +388,21 @@ public class Game {
      * @param etat etat produit par {@link #executerSimulation(int, int, int, int)}
      */
     private void restaurerSimulation(EtatSimulation etat) {
-        grille.setPiece(etat.piece, etat.startX, etat.startY);
-        grille.setPiece(etat.capture, etat.endX, etat.endY);
+        grid.setPiece(etat.piece, etat.startX, etat.startY);
+        grid.setPiece(etat.capture, etat.endX, etat.endY);
         etat.piece.setADejaBouge(etat.pieceAvaitBouge);
 
         if (etat.captureEnPassant != null) {
-            grille.setPiece(etat.captureEnPassant, etat.captureEnPassantX, etat.captureEnPassantY);
+            grid.setPiece(etat.captureEnPassant, etat.captureEnPassantX, etat.captureEnPassantY);
         }
 
         for (PieceEcrasee pieceEcrasee : etat.piecesEcrasees) {
-            grille.setPiece(pieceEcrasee.piece, pieceEcrasee.x, pieceEcrasee.y);
+            grid.setPiece(pieceEcrasee.piece, pieceEcrasee.x, pieceEcrasee.y);
         }
 
         if (etat.rook != null) {
-            grille.setPiece(null, etat.rookEndX, etat.startY);
-            grille.setPiece(etat.rook, etat.rookStartX, etat.startY);
+            grid.setPiece(null, etat.rookEndX, etat.startY);
+            grid.setPiece(etat.rook, etat.rookStartX, etat.startY);
             etat.rook.setADejaBouge(etat.rookAvaitBouge);
         }
     }
@@ -421,12 +421,12 @@ public class Game {
      * @param promotion type de piece souhaite pour une promotion
      */
     private void executerDeplacement(int startX, int startY, int endX, int endY, String promotion) {
-        Piece piece = grille.getPiece(startX, startY);
+        Piece piece = grid.getPiece(startX, startY);
         boolean priseEnPassant = isPriseEnPassantValide(piece, startX, startY, endX, endY);
         boolean roque = isRoqueValide(piece, startX, startY, endX, endY);
 
         if (priseEnPassant) {
-            grille.setPiece(null, endX, startY);
+            grid.setPiece(null, endX, startY);
         }
 
         if (isEcrasementLigne(piece, startX, startY, endX, endY)) {
@@ -437,12 +437,12 @@ public class Game {
             int direction = Integer.compare(endX, startX);
             int rookStartX = direction > 0 ? 7 : 0;
             int rookEndX = startX + direction;
-            Piece tour = grille.getPiece(rookStartX, startY);
-            grille.movePiece(rookStartX, startY, rookEndX, startY);
+            Piece tour = grid.getPiece(rookStartX, startY);
+            grid.movePiece(rookStartX, startY, rookEndX, startY);
             tour.setADejaBouge(true);
         }
 
-        grille.movePiece(startX, startY, endX, endY);
+        grid.movePiece(startX, startY, endX, endY);
         piece.setADejaBouge(true);
 
         pionVulnerableEnPassant = null;
@@ -456,7 +456,7 @@ public class Game {
 
         if (piece instanceof Pion && (endY == 0 || endY == 7)) {
             Piece piecePromue = creerPiecePromotion(promotion, endX, endY, piece.getCouleur());
-            grille.setPiece(piecePromue, endX, endY);
+            grid.setPiece(piecePromue, endX, endY);
             piecePromue.setADejaBouge(true);
         }
     }
@@ -467,21 +467,21 @@ public class Game {
      * @param promotion choix textuel de promotion
      * @param x colonne de la piece promue
      * @param y ligne de la piece promue
-     * @param couleur couleur de la piece promue
+     * @param color couleur de la piece promue
      * @return nouvelle piece promue, une reine si le choix est absent ou inconnu
      */
-    private Piece creerPiecePromotion(String promotion, int x, int y, Couleur couleur) {
+    private Piece creerPiecePromotion(String promotion, int x, int y, Color color) {
         String choix = promotion == null ? "reine" : promotion.trim().toLowerCase();
         switch (choix) {
             case "tour":
-                return new Tour(x, y, couleur);
+                return new Tour(x, y, color);
             case "fou":
-                return new Fou(x, y, couleur);
+                return new Fou(x, y, color);
             case "cavalier":
-                return new Cavalier(x, y, couleur);
+                return new Cavalier(x, y, color);
             case "reine":
             default:
-                return new Reine(x, y, couleur);
+                return new Reine(x, y, color);
         }
     }
 
@@ -556,12 +556,12 @@ public class Game {
         int currY = startY + stepY;
 
         while (currX != endX || currY != endY) {
-            Piece piece = grille.getPiece(currX, currY);
+            Piece piece = grid.getPiece(currX, currY);
             if (piece != null) {
                 if (sauvegarde != null) {
                     sauvegarde.add(new PieceEcrasee(piece, currX, currY));
                 }
-                grille.setPiece(null, currX, currY);
+                grid.setPiece(null, currX, currY);
             }
             currX += stepX;
             currY += stepY;
@@ -589,10 +589,10 @@ public class Game {
      * @param attaquant couleur des pieces attaquantes
      * @return {@code true} si la case est menacee
      */
-    private boolean isSquareAttacked(int x, int y, Couleur attaquant) {
+    private boolean isSquareAttacked(int x, int y, Color attaquant) {
         for (int startY = 0; startY < 8; startY++) {
             for (int startX = 0; startX < 8; startX++) {
-                Piece piece = grille.getPiece(startX, startY);
+                Piece piece = grid.getPiece(startX, startY);
                 if (piece != null && piece.getCouleur() == attaquant && attaqueCase(piece, x, y)) {
                     return true;
                 }
@@ -617,7 +617,7 @@ public class Game {
         int deltaY = Math.abs(y - piece.getY());
 
         if (piece instanceof Pion) {
-            int direction = piece.getCouleur() == Couleur.BLANC ? 1 : -1;
+            int direction = piece.getCouleur() == Color.BLANC ? 1 : -1;
             return deltaX == 1 && y == piece.getY() + direction;
         }
 
@@ -625,20 +625,20 @@ public class Game {
             return deltaX <= 1 && deltaY <= 1 && (deltaX != 0 || deltaY != 0);
         }
 
-        return piece.isValidMove(x, y, grille);
+        return piece.isValidMove(x, y, grid);
     }
 
     /**
      * Recherche le roi d'une couleur sur le plateau.
      *
-     * @param couleur couleur du roi recherche
+     * @param color couleur du roi recherche
      * @return piece roi trouvee, ou {@code null} si elle est absente
      */
-    private Piece trouverRoi(Couleur couleur) {
+    private Piece trouverRoi(Color color) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                Piece piece = grille.getPiece(x, y);
-                if (piece instanceof Roi && piece.getCouleur() == couleur) {
+                Piece piece = grid.getPiece(x, y);
+                if (piece instanceof Roi && piece.getCouleur() == color) {
                     return piece;
                 }
             }
@@ -649,12 +649,12 @@ public class Game {
     /**
      * Renvoie la couleur opposee.
      *
-     * @param couleur couleur source
-     * @return {@link Couleur#NOIR} pour les blancs, {@link Couleur#BLANC} pour
+     * @param color couleur source
+     * @return {@link Color#NOIR} pour les blancs, {@link Color#BLANC} pour
      *         les noirs
      */
-    private Couleur adversaire(Couleur couleur) {
-        return couleur == Couleur.BLANC ? Couleur.NOIR : Couleur.BLANC;
+    private Color adversaire(Color color) {
+        return color == Color.BLANC ? Color.NOIR : Color.BLANC;
     }
 
     /**

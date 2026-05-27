@@ -2,7 +2,7 @@ package ia;
 
 import engine.Coup;
 import engine.Game;
-import piece.Couleur;
+import piece.Color;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +25,7 @@ class RechercheMinMax {
         List<Coup> coups = game.getCoupsValides(game.getCurrentTurn());
         if (coups.isEmpty()) return Optional.empty();
 
-        Couleur joueur = game.getCurrentTurn();
+        Color joueur = game.getCurrentTurn();
         Coup meilleurCoup = coups.get(0);
         int meilleurScore = Integer.MIN_VALUE;
 
@@ -43,7 +43,7 @@ class RechercheMinMax {
         return Optional.of(meilleurCoup);
     }
 
-    private int alphaBeta(Game game, int profondeur, int alpha, int beta, Couleur joueur) {
+    private int alphaBeta(Game game, int profondeur, int alpha, int beta, Color joueur) {
         List<Coup> coups = game.getCoupsValides(game.getCurrentTurn());
         if (profondeur == 0 || coups.isEmpty()) {
             if (coups.isEmpty() && game.isKingInCheck(game.getCurrentTurn())) {

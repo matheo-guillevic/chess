@@ -8,13 +8,13 @@ import piece.Piece;
  * <p>Les coordonnees internes utilisent {@code x} pour les colonnes A-H et
  * {@code y} pour les lignes 1-8, toutes deux indexees de 0 a 7.</p>
  */
-public class Grille {
+public class Grid {
     private final Piece[][] board;
 
     /**
      * Cree une grille vide.
      */
-    public Grille(){
+    public Grid(){
         this.board = new Piece[8][8];
     }
 

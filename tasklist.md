@@ -8,7 +8,7 @@ Ce document regroupe l'ensemble des tâches à effectuer pour réaliser le proje
 - [x] Initialiser le dépôt Git.
 - [x] Créer la structure des packages (`src/engine`, `src/piece`, `src/plateau`, `src/cli`, `src/gui`).
 - [x] Créer l'énumération `Couleur` (BLANC, NOIR).
-- [x] Créer la classe abstraite `Piece` (ou interface) avec les propriétés communes (couleur, symbole, etc.).
+- [x] Créer la classe abstraite `Piece` (ou interface) avec les propriétés communes (color, symbole, etc.).
 - [x] Créer les sous-classes pour chaque type de pièce : `Pion`, `Tour`, `Cavalier`, `Fou`, `Reine`, `Roi`.
 - [x] Créer la classe `Grille` (ou `Plateau`) représentant le tableau 8x8.
 - [x] Créer la classe `Game` (ou `Partie`) pour gérer le déroulement.
@@ -21,7 +21,7 @@ Ce document regroupe l'ensemble des tâches à effectuer pour réaliser le proje
 
 ### 3. Logique de déplacement (Règles de base)
 *Note : Le roque, la prise en passant, la promotion et l'échec du roi ne sont pas requis dans cette partie.*
-- [x] **Règles communes** : Empêcher de sortir du plateau ou de manger une pièce de sa propre couleur.
+- [x] **Règles communes** : Empêcher de sortir du plateau ou de manger une pièce de sa propre color.
 - [x] **Prise** : Implémenter le mécanisme de capture lorsqu'une pièce atterrit sur une case occupée par un ennemi.
 - [x] **Pion** : Avancer d'1 case, avancer de 2 cases au premier coup, prise en diagonale d'1 case vers l'avant.
 - [x] **Tour** : Déplacement rectiligne horizontal ou vertical sans sauter par-dessus d'autres pièces.
@@ -30,14 +30,14 @@ Ce document regroupe l'ensemble des tâches à effectuer pour réaliser le proje
 - [x] **Reine** : Combinaison des déplacements de la Tour et du Fou.
 - [x] **Roi** : Déplacement d'1 case dans n'importe quelle direction.
 
-### 4. Boucle de jeu et Interaction Utilisateur
+### 4. Boucle de game et Interaction Utilisateur
 - [x] Créer une boucle principale dans `ConsoleUI` (ou `Game`) demandant à chaque tour le mouvement du joueur actif.
 - [x] Parser la saisie de l'utilisateur (ex: "A2 A4").
-- [x] Convertir la saisie en coordonnées utilisables par la grille de code (ex: `A2` -> `[1][0]`).
+- [x] Convertir la saisie en coordonnées utilisables par la grid de code (ex: `A2` -> `[1][0]`).
 - [x] Valider le mouvement :
-  - *Valide* : Mettre à jour la grille, afficher le plateau, changer de joueur actif.
+  - *Valide* : Mettre à jour la grid, afficher le plateau, changer de joueur actif.
   - *Invalide* : Afficher un message d'erreur et redemander une saisie au même joueur.
-- [x] S'assurer que le jeu peut tourner indéfiniment (partie complète).
+- [x] S'assurer que le game peut tourner indéfiniment (partie complète).
 
 ---
 
@@ -81,6 +81,6 @@ Ces tâches sont à réaliser **uniquement** si les parties 1 et 2 sont totaleme
 - [x] (Avancé) Mettre en place un algorithme MinMax avec Alpha-Beta Pruning pour évaluer les meilleurs coups.
 
 ### 4. Tests automatisés
-- [x] Ajouter un jeu de tests du moteur d'échecs.
+- [x] Ajouter un game de tests du moteur d'échecs.
 - [x] Couvrir les mouvements de base, les captures, l'échec, le roque, la prise en passant, la promotion, les pièces JSON et l'IA.
 - [x] Documenter les mouvements spéciaux.

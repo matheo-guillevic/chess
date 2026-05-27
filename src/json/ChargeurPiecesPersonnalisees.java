@@ -1,9 +1,9 @@
 package json;
 
-import piece.Couleur;
+import piece.Color;
 import piece.PiecePersonnalisee;
 import piece.ReglesDeplacement;
-import plateau.Grille;
+import plateau.Grid;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -35,29 +35,29 @@ public class ChargeurPiecesPersonnalisees {
      * Charge toutes les pieces personnalisees presentes dans un fichier.
      *
      * @param fichier fichier JSON a lire
-     * @param grille plateau recevant les pieces
+     * @param grid plateau recevant les pieces
      * @return resultat du chargement
      */
-    public ChargementPiecesResultat charger(Path fichier, Grille grille) {
-        return charger(fichier, grille, Collections.emptySet());
+    public ChargementPiecesResultat charger(Path fichier, Grid grid) {
+        return charger(fichier, grid, Collections.emptySet());
     }
 
     /**
      * Charge seulement les pieces dont le nom est selectionne.
      *
      * @param fichier fichier JSON a lire
-     * @param grille plateau recevant les pieces
+     * @param grid plateau recevant les pieces
      * @param nomsSelectionnes noms exacts des pieces a charger, ou ensemble vide pour tout charger
      * @return resultat du chargement
      */
-    public ChargementPiecesResultat charger(Path fichier, Grille grille, Set<String> nomsSelectionnes) {
+    public ChargementPiecesResultat charger(Path fichier, Grid grid, Set<String> nomsSelectionnes) {
         ChargementPiecesResultat resultat = new ChargementPiecesResultat();
 
         try {
             for (Map<?, ?> definition : lireDefinitions(fichier)) {
                 String nom = nomPiece(definition);
                 if (nomsSelectionnes == null || nomsSelectionnes.isEmpty() || nomsSelectionnes.contains(nom)) {
-                    ajouterPiece(definition, grille, resultat);
+                    ajouterPiece(definition, grid, resultat);
                 }
             }
         } catch (IOException e) {
@@ -181,7 +181,7 @@ public class ChargeurPiecesPersonnalisees {
         return null;
     }
 
-    private void ajouterPiece(Map<?, ?> definition, Grille grille, ChargementPiecesResultat resultat) {
+    private void ajouterPiece(Map<?, ?> definition, Grid grid, ChargementPiecesResultat resultat) {
         String nom = nomPiece(definition);
 
         Map<?, ?> position = asMap(definition.get("positionInitiale"));
@@ -198,12 +198,12 @@ public class ChargeurPiecesPersonnalisees {
             return;
         }
 
-        if (!grille.isInside(x, y)) {
+        if (!grid.isInside(x, y)) {
             resultat.ajouterErreur(nom + " ignoree : position hors plateau (" + x + ", " + y + ").");
             return;
         }
 
-        if (!grille.isEmpty(x, y)) {
+        if (!grid.isEmpty(x, y)) {
             resultat.ajouterErreur(nom + " ignoree : la case " + coordonnee(x, y) + " est deja occupee.");
             return;
         }
@@ -214,9 +214,9 @@ public class ChargeurPiecesPersonnalisees {
             return;
         }
 
-        Couleur couleur;
+        Color color;
         try {
-            couleur = Couleur.valueOf(couleurTexte.toUpperCase());
+            color = Color.valueOf(couleurTexte.toUpperCase());
         } catch (RuntimeException e) {
             resultat.ajouterErreur(nom + " ignoree : couleur invalide.");
             return;
@@ -232,7 +232,7 @@ public class ChargeurPiecesPersonnalisees {
         );
 
         String symbole = convertirSymbole(asString(definition.get("codeUnicode")));
-        grille.setPiece(new PiecePersonnalisee(nom, symbole, imagePiece(definition), x, y, couleur, regles), x, y);
+        grid.setPiece(new PiecePersonnalisee(nom, symbole, imagePiece(definition), x, y, color, regles), x, y);
         resultat.incrementerPiecesAjoutees();
     }
 

@@ -1,5 +1,5 @@
 package piece;
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Piece de type pion.
@@ -14,27 +14,27 @@ public class Pion extends Piece {
      *
      * @param x colonne initiale
      * @param y ligne initiale
-     * @param couleur couleur du pion
+     * @param color couleur du pion
      */
-    public Pion(int x, int y, Couleur couleur) { super(x, y, couleur); }
+    public Pion(int x, int y, Color color) { super(x, y, color); }
 
     @Override
-    public boolean isValidMove(int newX, int newY, Grille grille) {
-        int dir = (couleur == Couleur.BLANC) ? 1 : -1;
-        int startY = (couleur == Couleur.BLANC) ? 1 : 6;
+    public boolean isValidMove(int newX, int newY, Grid grid) {
+        int dir = (color == Color.BLANC) ? 1 : -1;
+        int startY = (color == Color.BLANC) ? 1 : 6;
 
         // Avancer d'une case
-        if (newX == x && newY == y + dir && grille.getPiece(newX, newY) == null) {
+        if (newX == x && newY == y + dir && grid.getPiece(newX, newY) == null) {
             return true;
         }
         // Avancer de deux cases (premier mouvement)
-        if (newX == x && newY == y + 2 * dir && y == startY && grille.getPiece(newX, y + dir) == null && grille.getPiece(newX, newY) == null) {
+        if (newX == x && newY == y + 2 * dir && y == startY && grid.getPiece(newX, y + dir) == null && grid.getPiece(newX, newY) == null) {
             return true;
         }
         // Manger en diagonale
         if (Math.abs(newX - x) == 1 && newY == y + dir) {
-            Piece target = grille.getPiece(newX, newY);
-            return target != null && target.getCouleur() != this.couleur;
+            Piece target = grid.getPiece(newX, newY);
+            return target != null && target.getCouleur() != this.color;
         }
         return false;
     }
@@ -44,6 +44,6 @@ public class Pion extends Piece {
      */
     @Override
     public String getSymbol() { 
-        return new String(Character.toChars(couleur == Couleur.BLANC ? PAWN_WHITE : PAWN_BLACK)); 
+        return new String(Character.toChars(color == Color.BLANC ? PAWN_WHITE : PAWN_BLACK));
     }
 }

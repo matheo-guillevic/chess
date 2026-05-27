@@ -15,11 +15,11 @@ class EvaluateurPosition {
      * @return score positif si la position favorise {@code joueur}, negatif
      *         sinon
      */
-    int evaluer(Game game, Couleur joueur) {
+    int evaluer(Game game, Color joueur) {
         int score = 0;
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                Piece piece = game.getGrille().getPiece(x, y);
+                Piece piece = game.getGrid().getPiece(x, y);
                 if (piece == null) continue;
                 int valeur = valeurPiece(piece);
                 score += piece.getCouleur() == joueur ? valeur : -valeur;

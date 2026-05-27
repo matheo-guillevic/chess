@@ -1,13 +1,13 @@
 package piece;
 
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Classe de base de toutes les pieces posees sur l'echiquier.
  *
  * <p>Elle centralise la position, la couleur, l'etat "a deja bouge" et les
  * constantes Unicode des pieces classiques. Les sous-classes implementent leur
- * propre validation de mouvement via {@link #isValidMove(int, int, Grille)}.</p>
+ * propre validation de mouvement via {@link #isValidMove(int, int, Grid)}.</p>
  */
 public abstract class Piece {
 
@@ -41,20 +41,20 @@ public abstract class Piece {
     /** Ligne actuelle de la piece. */
     protected int y;
     /** Couleur de la piece. */
-    protected final Couleur couleur;
-    private boolean aDejaBouge;
+    protected final Color color;
+    private boolean alreadyMoved;
 
     /**
      * Cree une piece a une position donnee.
      *
      * @param x colonne de depart, entre 0 et 7
      * @param y ligne de depart, entre 0 et 7
-     * @param couleur couleur de la piece
+     * @param color couleur de la piece
      */
-    public Piece(int x, int y, Couleur couleur) {
+    public Piece(int x, int y, Color color) {
         this.x = x;
         this.y = y;
-        this.couleur = couleur;
+        this.color = color;
     }
 
     /**
@@ -86,19 +86,19 @@ public abstract class Piece {
      *
      * @return couleur de la piece
      */
-    public Couleur getCouleur() { return couleur; }
+    public Color getCouleur() { return color; }
     /**
      * Indique si la piece a deja bouge.
      *
      * @return {@code true} si la piece a deja ete deplacee
      */
-    public boolean aDejaBouge() { return aDejaBouge; }
+    public boolean aDejaBouge() { return alreadyMoved; }
     /**
      * Modifie l'etat de deplacement.
      *
      * @param aDejaBouge nouvel etat de deplacement de la piece
      */
-    public void setADejaBouge(boolean aDejaBouge) { this.aDejaBouge = aDejaBouge; }
+    public void setADejaBouge(boolean aDejaBouge) { this.alreadyMoved = aDejaBouge; }
 
     /**
      * Verifie si le mouvement brut de la piece est autorise.
@@ -109,10 +109,10 @@ public abstract class Piece {
      *
      * @param newX colonne d'arrivee
      * @param newY ligne d'arrivee
-     * @param grille plateau courant
+     * @param grid plateau courant
      * @return {@code true} si la piece peut se deplacer vers la case indiquee
      */
-    public abstract boolean isValidMove(int newX, int newY, Grille grille);
+    public abstract boolean isValidMove(int newX, int newY, Grid grid);
 
     /**
      * Renvoie le symbole affiche.
@@ -126,17 +126,17 @@ public abstract class Piece {
      *
      * @param endX colonne d'arrivee
      * @param endY ligne d'arrivee
-     * @param grille plateau courant
+     * @param grid plateau courant
      * @return {@code true} si aucune piece ne bloque le trajet
      */
-    protected boolean isPathClear(int endX, int endY, Grille grille) {
+    protected boolean isPathClear(int endX, int endY, Grid grid) {
         int stepX = Integer.compare(endX, x);
         int stepY = Integer.compare(endY, y);
         
         int currX = x + stepX;
         int currY = y + stepY;
         while (currX != endX || currY != endY) {
-            if (grille.getPiece(currX, currY) != null) return false;
+            if (grid.getPiece(currX, currY) != null) return false;
             currX += stepX;
             currY += stepY;
         }
@@ -148,11 +148,11 @@ public abstract class Piece {
      *
      * @param endX colonne d'arrivee
      * @param endY ligne d'arrivee
-     * @param grille plateau courant
+     * @param grid plateau courant
      * @return {@code true} si la destination est vide ou occupee par un ennemi
      */
-    protected boolean isDestinationValid(int endX, int endY, Grille grille) {
-        Piece target = grille.getPiece(endX, endY);
-        return target == null || target.getCouleur() != this.couleur;
+    protected boolean isDestinationValid(int endX, int endY, Grid grid) {
+        Piece target = grid.getPiece(endX, endY);
+        return target == null || target.getCouleur() != this.color;
     }
 }

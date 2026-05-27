@@ -1,5 +1,5 @@
 import engine.Game;
-import plateau.Grille;
+import plateau.Grid;
 
 /**
  * Utilitaires partages par les tests manuels du projet.
@@ -25,12 +25,12 @@ public class TestSupport {
     /**
      * Vide totalement un plateau.
      *
-     * @param grille plateau a vider
+     * @param grid plateau a vider
      */
-    public void clearBoard(Grille grille) {
+    public void clearBoard(Grid grid) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                grille.setPiece(null, x, y);
+                grid.setPiece(null, x, y);
             }
         }
     }

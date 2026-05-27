@@ -5,7 +5,7 @@ import engine.Game;
 import ia.JoueurAutomatique;
 import json.ChargementPiecesResultat;
 import json.PiecePersonnaliseeInfo;
-import piece.Couleur;
+import piece.Color;
 import piece.Piece;
 import piece.PiecePersonnalisee;
 import piece.Pion;
@@ -66,7 +66,7 @@ public class ChessGUI extends JFrame {
     /** Barre de statut affichee sous l'echiquier. */
     private JLabel statusLabel;
     /** Couleur controlee par l'ordinateur, ou {@code null} en humain contre humain. */
-    private Couleur couleurIA;
+    private Color colorIA;
     /** Joueur automatique utilise lorsque le mode IA est actif. */
     private final JoueurAutomatique joueurAutomatique = new JoueurAutomatique();
     /** Cache des images de pieces personnalisees deja chargees. */
@@ -90,11 +90,11 @@ public class ChessGUI extends JFrame {
      * Cree une fenetre.
      *
      * @param game partie a afficher
-     * @param couleurIA couleur controlee par l'ordinateur, ou {@code null}
+     * @param colorIA couleur controlee par l'ordinateur, ou {@code null}
      */
-    public ChessGUI(Game game, Couleur couleurIA) {
+    public ChessGUI(Game game, Color colorIA) {
         this.game = game;
-        this.couleurIA = couleurIA;
+        this.colorIA = colorIA;
 
         setTitle("Jeu d'Echecs - Tour : " + game.getCurrentTurn());
         setSize(820, 860);
@@ -106,7 +106,7 @@ public class ChessGUI extends JFrame {
         setJMenuBar(createMenuBar());
 
         JPanel boardPanel = new JPanel(new GridLayout(8, 8));
-        boardPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 3));
+        boardPanel.setBorder(BorderFactory.createLineBorder(java.awt.Color.DARK_GRAY, 3));
         initializeBoard(boardPanel);
 
         JPanel southPanel = new JPanel(new BorderLayout());
@@ -142,12 +142,12 @@ public class ChessGUI extends JFrame {
 
         JMenu modeMenu = new JMenu("Mode");
         ButtonGroup modeGroup = new ButtonGroup();
-        JRadioButtonMenuItem humainVsHumain = new JRadioButtonMenuItem("Humain vs humain", couleurIA == null);
+        JRadioButtonMenuItem humainVsHumain = new JRadioButtonMenuItem("Humain vs humain", colorIA == null);
         humainVsHumain.addActionListener(e -> definirIA(null));
-        JRadioButtonMenuItem iaNoire = new JRadioButtonMenuItem("Ordinateur joue noir", couleurIA == Couleur.NOIR);
-        iaNoire.addActionListener(e -> definirIA(Couleur.NOIR));
-        JRadioButtonMenuItem iaBlanche = new JRadioButtonMenuItem("Ordinateur joue blanc", couleurIA == Couleur.BLANC);
-        iaBlanche.addActionListener(e -> definirIA(Couleur.BLANC));
+        JRadioButtonMenuItem iaNoire = new JRadioButtonMenuItem("Ordinateur joue noir", colorIA == Color.NOIR);
+        iaNoire.addActionListener(e -> definirIA(Color.NOIR));
+        JRadioButtonMenuItem iaBlanche = new JRadioButtonMenuItem("Ordinateur joue blanc", colorIA == Color.BLANC);
+        iaBlanche.addActionListener(e -> definirIA(piece.Color.BLANC));
         modeGroup.add(humainVsHumain);
         modeGroup.add(iaNoire);
         modeGroup.add(iaBlanche);
@@ -215,7 +215,7 @@ public class ChessGUI extends JFrame {
             label.setOpaque(true);
             label.setFont(fontPourSymbole(value.getSymbole(), 18));
             label.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-            label.setBackground(isSelected ? new Color(184, 207, 229) : Color.WHITE);
+            label.setBackground(isSelected ? new java.awt.Color(184, 207, 229) : java.awt.Color.WHITE);
             return label;
         });
 
@@ -295,8 +295,8 @@ public class ChessGUI extends JFrame {
         return String.join("\n", lignes);
     }
 
-    private void definirIA(Couleur couleurIA) {
-        this.couleurIA = couleurIA;
+    private void definirIA(Color colorIA) {
+        this.colorIA = colorIA;
         updateBoardDisplay();
         jouerTourIASiNecessaire();
     }
@@ -391,7 +391,7 @@ public class ChessGUI extends JFrame {
             return;
         }
 
-        Piece target = game.getGrille().getPiece(x, y);
+        Piece target = game.getGrid().getPiece(x, y);
         if (target != null && target.getCouleur() == game.getCurrentTurn()) {
             annulerSelection();
             selectionnerPiece(x, y);
@@ -416,11 +416,11 @@ public class ChessGUI extends JFrame {
     }
 
     private void selectionnerPiece(int x, int y) {
-        Piece piece = game.getGrille().getPiece(x, y);
+        Piece piece = game.getGrid().getPiece(x, y);
         if (piece != null && piece.getCouleur() == game.getCurrentTurn()) {
             selectedX = x;
             selectedY = y;
-            buttons[x][y].setBackground(new Color(255, 235, 59));
+            buttons[x][y].setBackground(new java.awt.Color(255, 235, 59));
             showValidMoves(piece);
         }
     }
@@ -432,7 +432,7 @@ public class ChessGUI extends JFrame {
     }
 
     private boolean estPromotionDemandee(int startX, int startY, int endX, int endY) {
-        Piece piece = game.getGrille().getPiece(startX, startY);
+        Piece piece = game.getGrid().getPiece(startX, startY);
         if (!(piece instanceof Pion) || (endY != 0 && endY != 7)) return false;
 
         for (Coup coup : game.getCoupsValides(game.getCurrentTurn())) {
@@ -466,13 +466,13 @@ public class ChessGUI extends JFrame {
             if (!isTourIA()) return;
             Optional<Coup> coup = joueurAutomatique.jouer(game);
             updateBoardDisplay();
-            coup.ifPresent(value -> statusLabel.setText("Ordinateur (" + couleurIA + ") joue : " + value));
+            coup.ifPresent(value -> statusLabel.setText("Ordinateur (" + colorIA + ") joue : " + value));
             afficherFinSiNecessaire();
         });
     }
 
     private boolean isTourIA() {
-        return couleurIA != null && !game.isFinished() && game.getCurrentTurn() == couleurIA;
+        return colorIA != null && !game.isFinished() && game.getCurrentTurn() == colorIA;
     }
 
     private void afficherFinSiNecessaire() {
@@ -494,23 +494,23 @@ public class ChessGUI extends JFrame {
             if (coup.getStartX() == piece.getX() && coup.getStartY() == piece.getY()) {
                 int x = coup.getEndX();
                 int y = coup.getEndY();
-                Piece target = game.getGrille().getPiece(x, y);
-                Color baseColor = ((x + y) % 2 == 0) ? new Color(181, 136, 99) : new Color(240, 217, 181);
+                Piece target = game.getGrid().getPiece(x, y);
+                java.awt.Color baseColor = ((x + y) % 2 == 0) ? new java.awt.Color(181, 136, 99) : new java.awt.Color(240, 217, 181);
 
                 if (target != null) {
-                    buttons[x][y].setBackground(blend(new Color(244, 67, 54), baseColor, 0.6f));
+                    buttons[x][y].setBackground(blend(new java.awt.Color(244, 67, 54), baseColor, 0.6f));
                 } else {
-                    buttons[x][y].setBackground(blend(new Color(139, 195, 74), baseColor, 0.5f));
+                    buttons[x][y].setBackground(blend(new java.awt.Color(139, 195, 74), baseColor, 0.5f));
                 }
             }
         }
     }
 
-    private Color blend(Color c1, Color c2, float ratio) {
+    private java.awt.Color blend(java.awt.Color c1, java.awt.Color c2, float ratio) {
         int r = (int) (c1.getRed() * ratio + c2.getRed() * (1 - ratio));
         int g = (int) (c1.getGreen() * ratio + c2.getGreen() * (1 - ratio));
         int b = (int) (c1.getBlue() * ratio + c2.getBlue() * (1 - ratio));
-        return new Color(Math.min(255, Math.max(0, r)),
+        return new java.awt.Color(Math.min(255, Math.max(0, r)),
                 Math.min(255, Math.max(0, g)),
                 Math.min(255, Math.max(0, b)));
     }
@@ -519,9 +519,9 @@ public class ChessGUI extends JFrame {
         for (int y = 7; y >= 0; y--) {
             for (int x = 0; x < 8; x++) {
                 if ((x + y) % 2 == 0) {
-                    buttons[x][y].setBackground(new Color(181, 136, 99));
+                    buttons[x][y].setBackground(new java.awt.Color(181, 136, 99));
                 } else {
-                    buttons[x][y].setBackground(new Color(240, 217, 181));
+                    buttons[x][y].setBackground(new java.awt.Color(240, 217, 181));
                 }
             }
         }
@@ -530,7 +530,7 @@ public class ChessGUI extends JFrame {
     private void updateBoardDisplay() {
         for (int y = 7; y >= 0; y--) {
             for (int x = 0; x < 8; x++) {
-                Piece piece = game.getGrille().getPiece(x, y);
+                Piece piece = game.getGrid().getPiece(x, y);
                 if (piece == null) {
                     buttons[x][y].setText("");
                     buttons[x][y].setIcon(null);
@@ -560,14 +560,14 @@ public class ChessGUI extends JFrame {
             button.setFont(fontPourSymbole(symbole, CUSTOM_SYMBOL_SIZE));
             button.setText(symbole);
             button.setToolTipText(symbole + " " + piecePersonnalisee.getNom());
-            button.setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
+            button.setForeground(piece.getCouleur() == Color.BLANC ? java.awt.Color.WHITE : java.awt.Color.BLACK);
             return;
         }
 
         button.setFont(fontPourSymbole(symbole, BOARD_SYMBOL_SIZE));
         button.setText(symbole);
         button.setToolTipText(null);
-        button.setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
+        button.setForeground(piece.getCouleur() == Color.BLANC ? java.awt.Color.WHITE : java.awt.Color.BLACK);
     }
 
     private Icon chargerIconePiecePersonnalisee(PiecePersonnalisee piece) {
@@ -656,8 +656,8 @@ public class ChessGUI extends JFrame {
         }
     }
 
-    private Color couleurSvg(String image) {
-        return image.toLowerCase().contains("white") ? Color.WHITE : Color.BLACK;
+    private java.awt.Color couleurSvg(String image) {
+        return image.toLowerCase().contains("white") ? java.awt.Color.WHITE : java.awt.Color.BLACK;
     }
 
     private static class SvgIcon implements Icon {
@@ -667,15 +667,15 @@ public class ChessGUI extends JFrame {
         private static final Pattern TOKEN = Pattern.compile("[AaCcHhLlMmQqSsTtVvZz]|[-+]?(?:\\d*\\.\\d+|\\d+)(?:[eE][-+]?\\d+)?");
 
         private final List<SvgPath> paths = new ArrayList<>();
-        private final Color couleur;
+        private final java.awt.Color color;
         private final int taille;
         private double viewX;
         private double viewY;
         private double viewWidth = 24;
         private double viewHeight = 24;
 
-        SvgIcon(String svg, Color couleur, int taille) {
-            this.couleur = couleur;
+        SvgIcon(String svg, java.awt.Color color, int taille) {
+            this.color = color;
             this.taille = taille;
             lireViewBox(svg);
             lirePaths(svg);
@@ -696,7 +696,7 @@ public class ChessGUI extends JFrame {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.translate(x, y);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(couleur);
+            g2.setColor(color);
 
             double scale = Math.min(taille / viewWidth, taille / viewHeight);
             double offsetX = (taille - viewWidth * scale) / 2.0;
@@ -903,8 +903,8 @@ public class ChessGUI extends JFrame {
             titre += " (echec)";
             status += " - echec au roi";
         }
-        if (couleurIA != null) {
-            status += " - ordinateur : " + couleurIA;
+        if (colorIA != null) {
+            status += " - ordinateur : " + colorIA;
         }
         setTitle(titre);
         statusLabel.setText(status);

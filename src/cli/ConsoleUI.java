@@ -5,7 +5,8 @@ import engine.Game;
 import ia.JoueurAutomatique;
 import json.ChargementPiecesResultat;
 import json.PiecePersonnaliseeInfo;
-import piece.Couleur;
+import piece.Color;
+
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.Set;
 public class ConsoleUI {
     private final Game game;
     private final boolean proposerPiecesPersonnalisees;
-    private final Couleur couleurIA;
+    private final Color colorIA;
     private final JoueurAutomatique joueurAutomatique = new JoueurAutomatique();
 
     /**
@@ -49,12 +50,12 @@ public class ConsoleUI {
      *
      * @param game partie a piloter
      * @param proposerPiecesPersonnalisees {@code true} pour proposer le chargement JSON
-     * @param couleurIA couleur jouee par l'ordinateur, ou {@code null} sans IA
+     * @param colorIA couleur jouee par l'ordinateur, ou {@code null} sans IA
      */
-    public ConsoleUI(Game game, boolean proposerPiecesPersonnalisees, Couleur couleurIA) {
+    public ConsoleUI(Game game, boolean proposerPiecesPersonnalisees, Color colorIA) {
         this.game = game;
         this.proposerPiecesPersonnalisees = proposerPiecesPersonnalisees;
-        this.couleurIA = couleurIA;
+        this.colorIA = colorIA;
     }
 
     /**
@@ -67,8 +68,8 @@ public class ConsoleUI {
                 demanderChargementPiecesPersonnalisees(scanner);
             }
             System.out.println("Entrez vos coups sous le format 'e2 e4'. Tapez 'quit' pour quitter.");
-            if (couleurIA != null) {
-                System.out.println("Mode joueur vs ordinateur : l'ordinateur joue " + couleurIA + ".");
+            if (colorIA != null) {
+                System.out.println("Mode joueur vs ordinateur : l'ordinateur joue " + colorIA + ".");
             }
 
             while (!game.isFinished()) {
@@ -76,7 +77,7 @@ public class ConsoleUI {
                     continue;
                 }
 
-                game.getGrille().afficher();
+                game.getGrid().afficher();
                 afficherEtatRoi();
                 System.out.println("Tour du joueur : " + game.getCurrentTurn());
                 System.out.print("Entrez votre coup : ");
@@ -108,7 +109,7 @@ public class ConsoleUI {
                 if (!success) {
                     System.out.println("Coup invalide.");
                 } else if (game.isFinished()) {
-                    game.getGrille().afficher();
+                    game.getGrid().afficher();
                     afficherResultatFin();
                 }
             }
@@ -117,17 +118,17 @@ public class ConsoleUI {
     }
 
     private boolean jouerTourIA() {
-        if (couleurIA == null || game.getCurrentTurn() != couleurIA || game.isFinished()) {
+        if (colorIA == null || game.getCurrentTurn() != colorIA || game.isFinished()) {
             return false;
         }
 
         Optional<Coup> coup = joueurAutomatique.jouer(game);
         if (coup.isPresent()) {
-            System.out.println("Ordinateur (" + couleurIA + ") joue : " + coup.get());
+            System.out.println("Ordinateur (" + colorIA + ") joue : " + coup.get());
         }
 
         if (game.isFinished()) {
-            game.getGrille().afficher();
+            game.getGrid().afficher();
             afficherResultatFin();
         }
         return true;
