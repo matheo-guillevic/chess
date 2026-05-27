@@ -4,6 +4,7 @@ import engine.ChargementPiecesResultat;
 import engine.Coup;
 import engine.Game;
 import engine.PiecePersonnaliseeInfo;
+import ia.JoueurAutomatique;
 import piece.Couleur;
 import piece.Piece;
 import piece.PiecePersonnalisee;
@@ -54,6 +55,8 @@ public class ChessGUI extends JFrame {
     private JLabel statusLabel;
     /** Couleur controlee par l'ordinateur, ou {@code null} en humain contre humain. */
     private Couleur couleurIA;
+    /** Joueur automatique utilise lorsque le mode IA est actif. */
+    private final JoueurAutomatique joueurAutomatique = new JoueurAutomatique();
 
     /** Colonne de la piece actuellement selectionnee, ou -1. */
     private int selectedX = -1;
@@ -445,7 +448,7 @@ public class ChessGUI extends JFrame {
 
         SwingUtilities.invokeLater(() -> {
             if (!isTourIA()) return;
-            Optional<Coup> coup = game.jouerCoupAutomatique();
+            Optional<Coup> coup = joueurAutomatique.jouer(game);
             updateBoardDisplay();
             coup.ifPresent(value -> statusLabel.setText("Ordinateur (" + couleurIA + ") joue : " + value));
             afficherFinSiNecessaire();

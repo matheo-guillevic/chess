@@ -1,5 +1,6 @@
 import engine.Coup;
 import engine.Game;
+import ia.JoueurAutomatique;
 import piece.Couleur;
 
 import java.util.Optional;
@@ -20,7 +21,7 @@ public class AiTest implements TestSuite {
 
     private void testAutomaticPlayer(TestSupport support) {
         Game game = new Game();
-        Optional<Coup> coup = game.jouerCoupAutomatique();
+        Optional<Coup> coup = new JoueurAutomatique().jouer(game);
 
         support.assertTrue("l'IA choisit un coup au depart", coup.isPresent());
         support.assertEquals("apres le coup automatique blanc, trait aux noirs", Couleur.NOIR, game.getCurrentTurn());

@@ -4,6 +4,7 @@ import engine.ChargementPiecesResultat;
 import engine.Coup;
 import engine.Game;
 import engine.PiecePersonnaliseeInfo;
+import ia.JoueurAutomatique;
 import piece.Couleur;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ public class ConsoleUI {
     private final Game game;
     private final boolean proposerPiecesPersonnalisees;
     private final Couleur couleurIA;
+    private final JoueurAutomatique joueurAutomatique = new JoueurAutomatique();
 
     /**
      * Cree une interface console avec chargement JSON propose et sans IA.
@@ -119,7 +121,7 @@ public class ConsoleUI {
             return false;
         }
 
-        Optional<Coup> coup = game.jouerCoupAutomatique();
+        Optional<Coup> coup = joueurAutomatique.jouer(game);
         if (coup.isPresent()) {
             System.out.println("Ordinateur (" + couleurIA + ") joue : " + coup.get());
         }

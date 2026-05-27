@@ -6,15 +6,14 @@ import plateau.Grille;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * Moteur principal d'une partie d'echecs.
  *
  * <p>Cette classe centralise l'etat de la partie, le joueur courant, la
- * validation des coups legaux, les regles speciales, les pieces personnalisees
- * et la gestion de "l'IA".</p>
+ * validation des coups legaux, les regles speciales et les pieces
+ * personnalisees.</p>
  */
 public class Game {
     /** Plateau contenant les pieces de la partie. */
@@ -36,10 +35,16 @@ public class Game {
      * Cree une nouvelle partie avec la position initiale standard.
      */
     public Game() {
+        this(true);
+    }
+
+    private Game(boolean initialiserPieces) {
         this.grille = new Grille();
         this.currentTurn = Couleur.BLANC;
         this.isFinished = false;
-        initPiece();
+        if (initialiserPieces) {
+            initPiece();
+        }
     }
 
     /**
@@ -66,6 +71,37 @@ public class Game {
      * @return couleur gagnante, ou {@code null} en cas de pat ou partie non terminee
      */
     public Couleur getWinner() { return winner; }
+
+    /**
+     * Cree une copie independante de la partie courante.
+     *
+     * <p>Cette copie sert notamment aux strategies de recherche qui doivent
+     * tester des coups sans modifier la partie jouee.</p>
+     *
+     * @return nouvelle partie contenant le meme etat que la partie courante
+     */
+    public Game copier() {
+        Game copie = new Game(false);
+        copie.currentTurn = currentTurn;
+        copie.isFinished = isFinished;
+        copie.winner = winner;
+        copie.caseEnPassantX = caseEnPassantX;
+        copie.caseEnPassantY = caseEnPassantY;
+
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Piece piece = grille.getPiece(x, y);
+                if (piece == null) continue;
+
+                Piece pieceCopie = copierPiece(piece);
+                copie.grille.setPiece(pieceCopie, x, y);
+                if (piece == pionVulnerableEnPassant) {
+                    copie.pionVulnerableEnPassant = pieceCopie;
+                }
+            }
+        }
+        return copie;
+    }
 
     /**
      * Charge toutes les pieces personnalisees d'un fichier JSON.
@@ -157,47 +193,6 @@ public class Game {
         currentTurn = adversaire(currentTurn);
         mettreAJourFinDePartie();
         return true;
-    }
-
-    /**
-     * Fait jouer automatiquement le joueur courant.
-     *
-     * @return coup joue, ou vide si aucun coup n'est possible
-     */
-    public Optional<Coup> jouerCoupAutomatique() {
-        Optional<Coup> coup = new JoueurAutomatique().choisirCoup(this);
-        coup.ifPresent(c -> tryMove(c.getStartX(), c.getStartY(), c.getEndX(), c.getEndY()));
-        return coup;
-    }
-
-    /**
-     * Choisit un meilleur coup selon une recherche MinMax alpha-beta.
-     *
-     * @param profondeur profondeur de recherche
-     * @return meilleur coup trouve, ou vide si aucun coup n'est possible
-     */
-    public Optional<Coup> choisirMeilleurCoup(int profondeur) {
-        List<Coup> coups = getCoupsValides(currentTurn);
-        if (coups.isEmpty()) return Optional.empty();
-
-        Couleur joueur = currentTurn;
-        Coup meilleurCoup = coups.get(0);
-        int meilleurScore = Integer.MIN_VALUE;
-
-        for (Coup coup : coups) {
-            EtatSimulation etat = executerSimulation(coup.getStartX(), coup.getStartY(), coup.getEndX(), coup.getEndY());
-            currentTurn = adversaire(currentTurn);
-            int score = alphaBeta(profondeur - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, joueur);
-            currentTurn = adversaire(currentTurn);
-            restaurerSimulation(etat);
-
-            if (score > meilleurScore) {
-                meilleurScore = score;
-                meilleurCoup = coup;
-            }
-        }
-
-        return Optional.of(meilleurCoup);
     }
 
     /**
@@ -488,6 +483,43 @@ public class Game {
     }
 
     /**
+     * Cree une copie d'une piece concrete.
+     *
+     * @param piece piece a copier
+     * @return nouvelle instance equivalente a la piece fournie
+     */
+    private Piece copierPiece(Piece piece) {
+        Piece copie;
+        if (piece instanceof Pion) {
+            copie = new Pion(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof Cavalier) {
+            copie = new Cavalier(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof Fou) {
+            copie = new Fou(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof Tour) {
+            copie = new Tour(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof Reine) {
+            copie = new Reine(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof Roi) {
+            copie = new Roi(piece.getX(), piece.getY(), piece.getCouleur());
+        } else if (piece instanceof PiecePersonnalisee) {
+            PiecePersonnalisee personnalisee = (PiecePersonnalisee) piece;
+            copie = new PiecePersonnalisee(
+                    personnalisee.getNom(),
+                    personnalisee.getSymbol(),
+                    piece.getX(),
+                    piece.getY(),
+                    piece.getCouleur(),
+                    personnalisee.getRegles()
+            );
+        } else {
+            throw new IllegalArgumentException("Type de piece non pris en charge : " + piece.getClass().getName());
+        }
+        copie.setADejaBouge(piece.aDejaBouge());
+        return copie;
+    }
+
+    /**
      * Indique si une piece personnalisee ecrase les pieces sur une ligne.
      *
      * @param piece piece deplacee
@@ -543,87 +575,6 @@ public class Game {
         if (!getCoupsValides(currentTurn).isEmpty()) return;
         isFinished = true;
         winner = isKingInCheck(currentTurn) ? adversaire(currentTurn) : null;
-    }
-
-    /**
-     * Evalue recursivement une position avec MinMax et elagage alpha-beta.
-     *
-     * @param profondeur profondeur restante de recherche
-     * @param alpha meilleure valeur deja garantie pour le joueur maximisant
-     * @param beta meilleure valeur deja garantie pour le joueur minimisant
-     * @param joueur couleur pour laquelle le score est calcule
-     * @return score de la position du point de vue de {@code joueur}
-     */
-    private int alphaBeta(int profondeur, int alpha, int beta, Couleur joueur) {
-        List<Coup> coups = getCoupsValides(currentTurn);
-        if (profondeur == 0 || coups.isEmpty()) {
-            if (coups.isEmpty() && isKingInCheck(currentTurn)) {
-                return currentTurn == joueur ? -100_000 : 100_000;
-            }
-            return evaluerPosition(joueur);
-        }
-
-        boolean maximise = currentTurn == joueur;
-        if (maximise) {
-            int valeur = Integer.MIN_VALUE;
-            for (Coup coup : coups) {
-                EtatSimulation etat = executerSimulation(coup.getStartX(), coup.getStartY(), coup.getEndX(), coup.getEndY());
-                currentTurn = adversaire(currentTurn);
-                valeur = Math.max(valeur, alphaBeta(profondeur - 1, alpha, beta, joueur));
-                currentTurn = adversaire(currentTurn);
-                restaurerSimulation(etat);
-                alpha = Math.max(alpha, valeur);
-                if (alpha >= beta) break;
-            }
-            return valeur;
-        }
-
-        int valeur = Integer.MAX_VALUE;
-        for (Coup coup : coups) {
-            EtatSimulation etat = executerSimulation(coup.getStartX(), coup.getStartY(), coup.getEndX(), coup.getEndY());
-            currentTurn = adversaire(currentTurn);
-            valeur = Math.min(valeur, alphaBeta(profondeur - 1, alpha, beta, joueur));
-            currentTurn = adversaire(currentTurn);
-            restaurerSimulation(etat);
-            beta = Math.min(beta, valeur);
-            if (alpha >= beta) break;
-        }
-        return valeur;
-    }
-
-    /**
-     * Calcule une evaluation materielle simple de la position.
-     *
-     * @param joueur couleur dont le point de vue sert au calcul
-     * @return score positif si la position favorise {@code joueur}, negatif
-     *         sinon
-     */
-    private int evaluerPosition(Couleur joueur) {
-        int score = 0;
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                Piece piece = grille.getPiece(x, y);
-                if (piece == null) continue;
-                int valeur = valeurPiece(piece);
-                score += piece.getCouleur() == joueur ? valeur : -valeur;
-            }
-        }
-        return score;
-    }
-
-    /**
-     * Donne la valeur materielle approximative d'une piece.
-     *
-     * @param piece piece a evaluer
-     * @return valeur utilisee par l'evaluation de l'IA
-     */
-    private int valeurPiece(Piece piece) {
-        if (piece instanceof Pion) return 100;
-        if (piece instanceof Cavalier || piece instanceof Fou) return 300;
-        if (piece instanceof Tour) return 500;
-        if (piece instanceof Reine) return 900;
-        if (piece instanceof Roi) return 20_000;
-        return 400;
     }
 
     /**
@@ -706,7 +657,7 @@ public class Game {
      * Etat sauvegarde pendant une simulation de coup.
      *
      * <p>Cette structure permet de revenir a la position precedente apres un
-     * test de legalite ou une recherche MinMax.</p>
+     * test de legalite.</p>
      */
     private static class EtatSimulation {
         /** Colonne de depart du coup simule. */
