@@ -14,6 +14,8 @@ import java.util.Set;
  * Tests du chargement JSON et des pieces personnalisees.
  */
 public class JsonPiecesTest implements TestSuite {
+    private static final Path PIECES_PERSO = Path.of("resources/pieces_perso.json");
+
     /**
      * Execute les tests lies aux pieces personnalisees.
      *
@@ -29,7 +31,7 @@ public class JsonPiecesTest implements TestSuite {
 
     private void testCustomJsonPieces(TestSupport support) {
         Game game = new Game();
-        ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(Path.of("pieces_perso.json"));
+        ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(PIECES_PERSO);
 
         support.assertEquals("six pieces personnalisees chargees", 6, resultat.getPiecesAjoutees());
         support.assertFalse("aucune erreur de chargement JSON", resultat.hasErreurs());
@@ -42,7 +44,7 @@ public class JsonPiecesTest implements TestSuite {
     private void testSelectiveCustomJsonPieces(TestSupport support) {
         Game game = new Game();
         ChargementPiecesResultat resultat = game.chargerPiecesPersonnalisees(
-                Path.of("pieces_perso.json"),
+                PIECES_PERSO,
                 Set.of("Bus Blanc", "Bus Noir")
         );
 

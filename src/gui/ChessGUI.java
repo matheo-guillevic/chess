@@ -6,6 +6,7 @@ import engine.Game;
 import engine.PiecePersonnaliseeInfo;
 import piece.Couleur;
 import piece.Piece;
+import piece.PiecePersonnalisee;
 import piece.Pion;
 
 import javax.swing.*;
@@ -26,6 +27,23 @@ import java.util.Set;
  * mode IA.</p>
  */
 public class ChessGUI extends JFrame {
+    /** Taille des symboles dans les cases. */
+    private static final int BOARD_SYMBOL_SIZE = 60;
+    /** Taille plus compacte pour les emojis, dont les metriques sont souvent hautes. */
+    private static final int CUSTOM_SYMBOL_SIZE = 36;
+    /** Polices essayees quand un symbole n'est pas couvert par la police d'echecs. */
+    private static final String[] SYMBOL_FONTS = {
+            "Noto Color Emoji",
+            "Noto Emoji",
+            "Segoe UI Emoji",
+            "Apple Color Emoji",
+            "Twemoji Mozilla",
+            "Symbola",
+            "Noto Sans Symbols2",
+            "Noto Sans Symbols",
+            "Dialog",
+            "SansSerif"
+    };
     /** Boutons de l'echiquier indexes par coordonnees internes. */
     private final JButton[][] buttons = new JButton[8][8];
     /** Partie affichee et pilotee par la fenetre. */
@@ -176,6 +194,7 @@ public class ChessGUI extends JFrame {
         list.setCellRenderer((jList, value, index, isSelected, cellHasFocus) -> {
             JLabel label = new JLabel(value.getSymbole() + "  " + value.getNom() + " (" + value.getCouleur() + ", " + value.getCoordonnee() + ")");
             label.setOpaque(true);
+            label.setFont(fontPourSymbole(value.getSymbole(), 18));
             label.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
             label.setBackground(isSelected ? new Color(184, 207, 229) : Color.WHITE);
             return label;
@@ -185,7 +204,7 @@ public class ChessGUI extends JFrame {
         preview.setEditable(false);
         preview.setLineWrap(true);
         preview.setWrapStyleWord(true);
-        preview.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        preview.setFont(new Font("Dialog", Font.PLAIN, 14));
         preview.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         list.addListSelectionListener(e -> {
@@ -264,15 +283,34 @@ public class ChessGUI extends JFrame {
     }
 
     private void detectCompatibleFont() {
-        chessFont = new Font("SansSerif", Font.PLAIN, 60);
+        chessFont = new Font("SansSerif", Font.PLAIN, BOARD_SYMBOL_SIZE);
         String[] preferredFonts = {"DejaVu Sans", "FreeSerif", "Symbola", "Noto Sans Symbols", "Segoe UI Symbol", "Arial Unicode MS"};
         for (String fontName : preferredFonts) {
-            Font f = new Font(fontName, Font.PLAIN, 60);
+            Font f = new Font(fontName, Font.PLAIN, BOARD_SYMBOL_SIZE);
             if (f.canDisplay('\u265F')) {
                 chessFont = f;
                 break;
             }
         }
+    }
+
+    private Font fontPourSymbole(String symbole, int taille) {
+        if (symbole == null || symbole.isEmpty()) {
+            return chessFont.deriveFont((float) taille);
+        }
+
+        if (chessFont.canDisplayUpTo(symbole) == -1) {
+            return chessFont.deriveFont((float) taille);
+        }
+
+        for (String fontName : SYMBOL_FONTS) {
+            Font font = new Font(fontName, Font.PLAIN, taille);
+            if (font.canDisplayUpTo(symbole) == -1) {
+                return font;
+            }
+        }
+
+        return new Font("Dialog", Font.PLAIN, taille);
     }
 
     private JPanel createHorizontalLabels() {
@@ -306,6 +344,9 @@ public class ChessGUI extends JFrame {
                 button.setFocusPainted(false);
                 button.setOpaque(true);
                 button.setBorderPainted(false);
+                button.setMargin(new Insets(0, 0, 0, 0));
+                button.setHorizontalAlignment(SwingConstants.CENTER);
+                button.setVerticalAlignment(SwingConstants.CENTER);
 
                 int finalX = x;
                 int finalY = y;
@@ -473,13 +514,32 @@ public class ChessGUI extends JFrame {
                 Piece piece = game.getGrille().getPiece(x, y);
                 if (piece == null) {
                     buttons[x][y].setText("");
+                    buttons[x][y].setIcon(null);
+                    buttons[x][y].setFont(chessFont);
                 } else {
-                    buttons[x][y].setText(piece.getSymbol());
-                    buttons[x][y].setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
+                    afficherPiece(buttons[x][y], piece);
                 }
             }
         }
         updateTitleAndStatus();
+    }
+
+    private void afficherPiece(JButton button, Piece piece) {
+        String symbole = piece.getSymbol();
+        button.setIcon(null);
+
+        if (piece instanceof PiecePersonnalisee) {
+            PiecePersonnalisee piecePersonnalisee = (PiecePersonnalisee) piece;
+            button.setText("");
+            button.setIcon(new PiecePersonnaliseeIcon(piecePersonnalisee.getNom(), piece.getCouleur()));
+            button.setToolTipText(symbole + " " + piecePersonnalisee.getNom());
+            return;
+        }
+
+        button.setFont(fontPourSymbole(symbole, BOARD_SYMBOL_SIZE));
+        button.setText(symbole);
+        button.setToolTipText(null);
+        button.setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
     }
 
     private void updateTitleAndStatus() {
@@ -494,5 +554,110 @@ public class ChessGUI extends JFrame {
         }
         setTitle(titre);
         statusLabel.setText(status);
+    }
+
+    private static class PiecePersonnaliseeIcon implements Icon {
+        private static final int SIZE = 54;
+        private final String nom;
+        private final Couleur couleur;
+
+        PiecePersonnaliseeIcon(String nom, Couleur couleur) {
+            this.nom = nom == null ? "" : nom.toLowerCase();
+            this.couleur = couleur;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return SIZE;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return SIZE;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.translate(x, y);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            if (nom.contains("bus")) {
+                paintBus(g2);
+            } else if (nom.contains("minotaure")) {
+                paintMinotaure(g2);
+            } else if (nom.contains("lion")) {
+                paintLion(g2);
+            } else {
+                paintDefault(g2);
+            }
+
+            g2.dispose();
+        }
+
+        private void paintBus(Graphics2D g2) {
+            Color body = couleur == Couleur.BLANC ? new Color(255, 202, 40) : new Color(244, 143, 27);
+            g2.setColor(body);
+            g2.fillRoundRect(7, 13, 40, 27, 8, 8);
+            g2.setColor(Color.BLACK);
+            g2.drawRoundRect(7, 13, 40, 27, 8, 8);
+            g2.setColor(new Color(187, 222, 251));
+            g2.fillRect(12, 18, 9, 9);
+            g2.fillRect(24, 18, 9, 9);
+            g2.fillRect(36, 18, 7, 9);
+            g2.setColor(Color.BLACK);
+            g2.drawLine(7, 30, 47, 30);
+            g2.fillOval(13, 35, 9, 9);
+            g2.fillOval(33, 35, 9, 9);
+            g2.setColor(Color.WHITE);
+            g2.fillOval(16, 38, 3, 3);
+            g2.fillOval(36, 38, 3, 3);
+        }
+
+        private void paintLion(Graphics2D g2) {
+            g2.setColor(new Color(183, 100, 25));
+            int[] xs = {27, 33, 40, 39, 47, 41, 43, 35, 32, 27, 22, 19, 11, 13, 7, 15, 14, 21};
+            int[] ys = {5, 13, 11, 19, 24, 29, 38, 37, 47, 40, 47, 37, 38, 29, 24, 19, 11, 13};
+            g2.fillPolygon(xs, ys, xs.length);
+            g2.setColor(new Color(255, 183, 77));
+            g2.fillOval(13, 13, 28, 28);
+            g2.setColor(Color.BLACK);
+            g2.drawOval(13, 13, 28, 28);
+            g2.fillOval(21, 24, 4, 4);
+            g2.fillOval(31, 24, 4, 4);
+            g2.drawArc(23, 29, 10, 7, 200, 140);
+            g2.setColor(new Color(93, 64, 55));
+            g2.fillOval(26, 29, 5, 4);
+        }
+
+        private void paintMinotaure(Graphics2D g2) {
+            g2.setColor(new Color(255, 238, 176));
+            g2.fillArc(2, 6, 21, 25, 120, 210);
+            g2.fillArc(31, 6, 21, 25, -150, 210);
+            g2.setColor(Color.BLACK);
+            g2.drawArc(2, 6, 21, 25, 120, 210);
+            g2.drawArc(31, 6, 21, 25, -150, 210);
+
+            g2.setColor(new Color(121, 85, 72));
+            g2.fillOval(13, 13, 28, 31);
+            g2.setColor(new Color(161, 113, 83));
+            g2.fillOval(18, 27, 18, 15);
+            g2.setColor(Color.BLACK);
+            g2.drawOval(13, 13, 28, 31);
+            g2.fillOval(21, 25, 4, 4);
+            g2.fillOval(31, 25, 4, 4);
+            g2.fillOval(23, 34, 3, 3);
+            g2.fillOval(30, 34, 3, 3);
+        }
+
+        private void paintDefault(Graphics2D g2) {
+            g2.setColor(couleur == Couleur.BLANC ? Color.WHITE : Color.BLACK);
+            g2.fillOval(10, 8, 34, 34);
+            g2.setColor(Color.DARK_GRAY);
+            g2.drawOval(10, 8, 34, 34);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 20));
+            g2.drawString("?", 22, 32);
+        }
     }
 }

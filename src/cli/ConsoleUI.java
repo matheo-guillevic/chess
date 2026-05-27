@@ -152,12 +152,12 @@ public class ConsoleUI {
         String reponse = scanner.nextLine().trim().toLowerCase();
         if (!reponse.equals("o") && !reponse.equals("oui")) return;
 
-        System.out.print("Chemin du fichier JSON [pieces_perso.json] : ");
+        System.out.print("Chemin du fichier JSON [resources/pieces_perso.json] : ");
         if (!scanner.hasNextLine()) return;
 
         String chemin = scanner.nextLine().trim();
         if (chemin.isEmpty()) {
-            chemin = "pieces_perso.json";
+            chemin = "resources/pieces_perso.json";
         }
 
         Path fichier = Path.of(chemin);

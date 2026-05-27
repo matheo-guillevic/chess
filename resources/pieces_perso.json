@@ -2,7 +2,7 @@
   "piecesPersonnalisees": [
     {
       "nom": "Lion Blanc",
-      "codeUnicode": "0x265E",
+      "codeUnicode": "\uD80C\uDCFE",
       "couleur": "BLANC",
       "positionInitiale": {
         "x": 3,
@@ -17,7 +17,7 @@
     },
     {
       "nom": "Lion Noir",
-      "codeUnicode": "0x265E",
+      "codeUnicode": "\uD80C\uDCFE",
       "couleur": "NOIR",
       "positionInitiale": {
         "x": 3,
@@ -32,7 +32,7 @@
     },
     {
       "nom": "Bus Blanc",
-      "codeUnicode": "B",
+      "codeUnicode": "🚌",
       "couleur": "BLANC",
       "positionInitiale": {
         "x": 0,
@@ -48,7 +48,7 @@
     },
     {
       "nom": "Bus Noir",
-      "codeUnicode": "B",
+      "codeUnicode": "🚌",
       "couleur": "NOIR",
       "positionInitiale": {
         "x": 0,
@@ -64,7 +64,7 @@
     },
     {
       "nom": "Minotaure Blanc",
-      "codeUnicode": "M",
+      "codeUnicode": "🐂",
       "couleur": "BLANC",
       "positionInitiale": {
         "x": 7,
@@ -80,7 +80,7 @@
     },
     {
       "nom": "Minotaure Noir",
-      "codeUnicode": "M",
+      "codeUnicode": "🐂",
       "couleur": "NOIR",
       "positionInitiale": {
         "x": 7,
