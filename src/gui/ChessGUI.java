@@ -13,12 +13,22 @@ import piece.Pion;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Fenetre Swing principale du jeu d'echecs.
@@ -32,6 +42,8 @@ public class ChessGUI extends JFrame {
     private static final int BOARD_SYMBOL_SIZE = 60;
     /** Taille plus compacte pour les emojis, dont les metriques sont souvent hautes. */
     private static final int CUSTOM_SYMBOL_SIZE = 36;
+    /** Taille des images de pieces personnalisees sur l'echiquier. */
+    private static final int CUSTOM_IMAGE_SIZE = 54;
     /** Polices essayees quand un symbole n'est pas couvert par la police d'echecs. */
     private static final String[] SYMBOL_FONTS = {
             "Noto Color Emoji",
@@ -57,6 +69,8 @@ public class ChessGUI extends JFrame {
     private Couleur couleurIA;
     /** Joueur automatique utilise lorsque le mode IA est actif. */
     private final JoueurAutomatique joueurAutomatique = new JoueurAutomatique();
+    /** Cache des images de pieces personnalisees deja chargees. */
+    private final Map<String, Icon> imageCache = new HashMap<>();
 
     /** Colonne de la piece actuellement selectionnee, ou -1. */
     private int selectedX = -1;
@@ -195,7 +209,9 @@ public class ChessGUI extends JFrame {
         list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         list.setSelectedIndices(tousLesIndices(catalogue.size()));
         list.setCellRenderer((jList, value, index, isSelected, cellHasFocus) -> {
-            JLabel label = new JLabel(value.getSymbole() + "  " + value.getNom() + " (" + value.getCouleur() + ", " + value.getCoordonnee() + ")");
+            Icon icone = chargerIconeCatalogue(value);
+            String texte = value.getNom() + " (" + value.getCouleur() + ", " + value.getCoordonnee() + ")";
+            JLabel label = new JLabel(icone == null ? value.getSymbole() + "  " + texte : texte, icone, JLabel.LEFT);
             label.setOpaque(true);
             label.setFont(fontPourSymbole(value.getSymbole(), 18));
             label.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
@@ -533,9 +549,18 @@ public class ChessGUI extends JFrame {
 
         if (piece instanceof PiecePersonnalisee) {
             PiecePersonnalisee piecePersonnalisee = (PiecePersonnalisee) piece;
-            button.setText("");
-            button.setIcon(new PiecePersonnaliseeIcon(piecePersonnalisee.getNom(), piece.getCouleur()));
+            Icon icone = chargerIconePiecePersonnalisee(piecePersonnalisee);
+            if (icone != null) {
+                button.setText("");
+                button.setIcon(icone);
+                button.setToolTipText(piecePersonnalisee.getNom());
+                return;
+            }
+
+            button.setFont(fontPourSymbole(symbole, CUSTOM_SYMBOL_SIZE));
+            button.setText(symbole);
             button.setToolTipText(symbole + " " + piecePersonnalisee.getNom());
+            button.setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
             return;
         }
 
@@ -543,6 +568,332 @@ public class ChessGUI extends JFrame {
         button.setText(symbole);
         button.setToolTipText(null);
         button.setForeground(piece.getCouleur() == Couleur.BLANC ? Color.WHITE : Color.BLACK);
+    }
+
+    private Icon chargerIconePiecePersonnalisee(PiecePersonnalisee piece) {
+        String image = piece.getImage();
+        if (image == null || image.isBlank()) {
+            return null;
+        }
+        return imageCache.computeIfAbsent(image, this::chargerIcone);
+    }
+
+    private Icon chargerIconeCatalogue(PiecePersonnaliseeInfo info) {
+        String image = info.getImage();
+        if (image == null || image.isBlank()) {
+            return null;
+        }
+        return imageCache.computeIfAbsent("catalogue:" + image, key -> chargerIcone(image));
+    }
+
+    private Icon chargerIcone(String image) {
+        if (image.toLowerCase().endsWith(".svg")) {
+            return chargerIconeSvg(image);
+        }
+
+        ImageIcon icon = chargerIconeDepuisClasspath(image);
+        if (icon == null) {
+            icon = chargerIconeDepuisFichier(image);
+        }
+        if (icon == null || icon.getIconWidth() <= 0 || icon.getIconHeight() <= 0) {
+            return null;
+        }
+
+        Image scaled = icon.getImage().getScaledInstance(CUSTOM_IMAGE_SIZE, CUSTOM_IMAGE_SIZE, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    }
+
+    private ImageIcon chargerIconeDepuisClasspath(String image) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL url = classLoader.getResource(image);
+        if (url == null && image.startsWith("resources/")) {
+            url = classLoader.getResource(image.substring("resources/".length()));
+        }
+        if (url == null && !image.startsWith("images/")) {
+            url = classLoader.getResource("images/" + image);
+        }
+        return url == null ? null : new ImageIcon(url);
+    }
+
+    private ImageIcon chargerIconeDepuisFichier(String image) {
+        File fichier = new File(image);
+        if (!fichier.isFile()) {
+            fichier = new File("resources", image);
+        }
+        return fichier.isFile() ? new ImageIcon(fichier.getAbsolutePath()) : null;
+    }
+
+    private Icon chargerIconeSvg(String image) {
+        String contenu = lireTexteImage(image);
+        if (contenu == null) {
+            return null;
+        }
+        return new SvgIcon(contenu, couleurSvg(image), CUSTOM_IMAGE_SIZE);
+    }
+
+    private String lireTexteImage(String image) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        String cheminClasspath = image.startsWith("resources/") ? image.substring("resources/".length()) : image;
+        try (InputStream input = classLoader.getResourceAsStream(cheminClasspath)) {
+            if (input != null) {
+                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+            return null;
+        }
+
+        File fichier = new File(image);
+        if (!fichier.isFile()) {
+            fichier = new File("resources", image);
+        }
+        if (!fichier.isFile()) {
+            return null;
+        }
+        try {
+            return Files.readString(fichier.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private Color couleurSvg(String image) {
+        return image.toLowerCase().contains("white") ? Color.WHITE : Color.BLACK;
+    }
+
+    private static class SvgIcon implements Icon {
+        private static final Pattern VIEW_BOX = Pattern.compile("viewBox=\"([^\"]+)\"");
+        private static final Pattern PATH_TAG = Pattern.compile("<path\\b[^>]*>");
+        private static final Pattern PATH_DATA = Pattern.compile("d=\"([^\"]+)\"");
+        private static final Pattern TOKEN = Pattern.compile("[AaCcHhLlMmQqSsTtVvZz]|[-+]?(?:\\d*\\.\\d+|\\d+)(?:[eE][-+]?\\d+)?");
+
+        private final List<SvgPath> paths = new ArrayList<>();
+        private final Color couleur;
+        private final int taille;
+        private double viewX;
+        private double viewY;
+        private double viewWidth = 24;
+        private double viewHeight = 24;
+
+        SvgIcon(String svg, Color couleur, int taille) {
+            this.couleur = couleur;
+            this.taille = taille;
+            lireViewBox(svg);
+            lirePaths(svg);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return taille;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return taille;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.translate(x, y);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(couleur);
+
+            double scale = Math.min(taille / viewWidth, taille / viewHeight);
+            double offsetX = (taille - viewWidth * scale) / 2.0;
+            double offsetY = (taille - viewHeight * scale) / 2.0;
+            g2.translate(offsetX, offsetY);
+            g2.scale(scale, scale);
+            g2.translate(-viewX, -viewY);
+            g2.setStroke(new BasicStroke((float) (2.0 / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            for (SvgPath path : paths) {
+                if (path.stroke) {
+                    g2.draw(path.path);
+                } else {
+                    g2.fill(path.path);
+                }
+            }
+            g2.dispose();
+        }
+
+        private void lireViewBox(String svg) {
+            Matcher matcher = VIEW_BOX.matcher(svg);
+            if (!matcher.find()) return;
+
+            String[] valeurs = matcher.group(1).trim().split("[ ,]+");
+            if (valeurs.length != 4) return;
+            try {
+                viewX = Double.parseDouble(valeurs[0]);
+                viewY = Double.parseDouble(valeurs[1]);
+                viewWidth = Double.parseDouble(valeurs[2]);
+                viewHeight = Double.parseDouble(valeurs[3]);
+            } catch (NumberFormatException e) {
+                viewX = 0;
+                viewY = 0;
+                viewWidth = 24;
+                viewHeight = 24;
+            }
+        }
+
+        private void lirePaths(String svg) {
+            Matcher tags = PATH_TAG.matcher(svg);
+            while (tags.find()) {
+                String tag = tags.group();
+                Matcher data = PATH_DATA.matcher(tag);
+                if (data.find()) {
+                    paths.add(new SvgPath(parserPath(data.group(1)), tag.contains("stroke=")));
+                }
+            }
+        }
+
+        private Path2D parserPath(String data) {
+            List<String> tokens = new ArrayList<>();
+            Matcher matcher = TOKEN.matcher(data);
+            while (matcher.find()) {
+                tokens.add(matcher.group());
+            }
+
+            Path2D.Double path = new Path2D.Double();
+            PathCursor cursor = new PathCursor();
+            char commande = ' ';
+            int i = 0;
+            while (i < tokens.size()) {
+                String token = tokens.get(i);
+                if (estCommande(token)) {
+                    commande = token.charAt(0);
+                    i++;
+                    if (commande == 'Z' || commande == 'z') {
+                        path.closePath();
+                        cursor.x = cursor.startX;
+                        cursor.y = cursor.startY;
+                    }
+                    continue;
+                }
+
+                switch (commande) {
+                    case 'M':
+                    case 'm':
+                        i = lireMove(tokens, i, path, cursor, commande == 'm');
+                        commande = commande == 'm' ? 'l' : 'L';
+                        break;
+                    case 'L':
+                    case 'l':
+                        i = lireLine(tokens, i, path, cursor, commande == 'l');
+                        break;
+                    case 'H':
+                    case 'h':
+                        i = lireHorizontal(tokens, i, path, cursor, commande == 'h');
+                        break;
+                    case 'V':
+                    case 'v':
+                        i = lireVertical(tokens, i, path, cursor, commande == 'v');
+                        break;
+                    case 'C':
+                    case 'c':
+                        i = lireCurve(tokens, i, path, cursor, commande == 'c');
+                        break;
+                    default:
+                        i++;
+                        break;
+                }
+            }
+            return path;
+        }
+
+        private int lireMove(List<String> tokens, int i, Path2D.Double path, PathCursor cursor, boolean relatif) {
+            if (i + 1 >= tokens.size()) return tokens.size();
+            double x = nombre(tokens.get(i++));
+            double y = nombre(tokens.get(i++));
+            if (relatif) {
+                x += cursor.x;
+                y += cursor.y;
+            }
+            path.moveTo(x, y);
+            cursor.x = x;
+            cursor.y = y;
+            cursor.startX = x;
+            cursor.startY = y;
+            return i;
+        }
+
+        private int lireLine(List<String> tokens, int i, Path2D.Double path, PathCursor cursor, boolean relatif) {
+            if (i + 1 >= tokens.size()) return tokens.size();
+            double x = nombre(tokens.get(i++));
+            double y = nombre(tokens.get(i++));
+            if (relatif) {
+                x += cursor.x;
+                y += cursor.y;
+            }
+            path.lineTo(x, y);
+            cursor.x = x;
+            cursor.y = y;
+            return i;
+        }
+
+        private int lireHorizontal(List<String> tokens, int i, Path2D.Double path, PathCursor cursor, boolean relatif) {
+            if (i >= tokens.size()) return tokens.size();
+            double x = nombre(tokens.get(i++));
+            if (relatif) x += cursor.x;
+            path.lineTo(x, cursor.y);
+            cursor.x = x;
+            return i;
+        }
+
+        private int lireVertical(List<String> tokens, int i, Path2D.Double path, PathCursor cursor, boolean relatif) {
+            if (i >= tokens.size()) return tokens.size();
+            double y = nombre(tokens.get(i++));
+            if (relatif) y += cursor.y;
+            path.lineTo(cursor.x, y);
+            cursor.y = y;
+            return i;
+        }
+
+        private int lireCurve(List<String> tokens, int i, Path2D.Double path, PathCursor cursor, boolean relatif) {
+            if (i + 5 >= tokens.size()) return tokens.size();
+            double x1 = nombre(tokens.get(i++));
+            double y1 = nombre(tokens.get(i++));
+            double x2 = nombre(tokens.get(i++));
+            double y2 = nombre(tokens.get(i++));
+            double x = nombre(tokens.get(i++));
+            double y = nombre(tokens.get(i++));
+            if (relatif) {
+                x1 += cursor.x;
+                y1 += cursor.y;
+                x2 += cursor.x;
+                y2 += cursor.y;
+                x += cursor.x;
+                y += cursor.y;
+            }
+            path.curveTo(x1, y1, x2, y2, x, y);
+            cursor.x = x;
+            cursor.y = y;
+            return i;
+        }
+
+        private boolean estCommande(String token) {
+            return token.length() == 1 && Character.isLetter(token.charAt(0));
+        }
+
+        private double nombre(String token) {
+            return Double.parseDouble(token);
+        }
+    }
+
+    private static class SvgPath {
+        private final Path2D path;
+        private final boolean stroke;
+
+        SvgPath(Path2D path, boolean stroke) {
+            this.path = path;
+            this.stroke = stroke;
+        }
+    }
+
+    private static class PathCursor {
+        private double x;
+        private double y;
+        private double startX;
+        private double startY;
     }
 
     private void updateTitleAndStatus() {
@@ -557,110 +908,5 @@ public class ChessGUI extends JFrame {
         }
         setTitle(titre);
         statusLabel.setText(status);
-    }
-
-    private static class PiecePersonnaliseeIcon implements Icon {
-        private static final int SIZE = 54;
-        private final String nom;
-        private final Couleur couleur;
-
-        PiecePersonnaliseeIcon(String nom, Couleur couleur) {
-            this.nom = nom == null ? "" : nom.toLowerCase();
-            this.couleur = couleur;
-        }
-
-        @Override
-        public int getIconWidth() {
-            return SIZE;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return SIZE;
-        }
-
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.translate(x, y);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-
-            if (nom.contains("bus")) {
-                paintBus(g2);
-            } else if (nom.contains("minotaure")) {
-                paintMinotaure(g2);
-            } else if (nom.contains("lion")) {
-                paintLion(g2);
-            } else {
-                paintDefault(g2);
-            }
-
-            g2.dispose();
-        }
-
-        private void paintBus(Graphics2D g2) {
-            Color body = couleur == Couleur.BLANC ? new Color(255, 202, 40) : new Color(244, 143, 27);
-            g2.setColor(body);
-            g2.fillRoundRect(7, 13, 40, 27, 8, 8);
-            g2.setColor(Color.BLACK);
-            g2.drawRoundRect(7, 13, 40, 27, 8, 8);
-            g2.setColor(new Color(187, 222, 251));
-            g2.fillRect(12, 18, 9, 9);
-            g2.fillRect(24, 18, 9, 9);
-            g2.fillRect(36, 18, 7, 9);
-            g2.setColor(Color.BLACK);
-            g2.drawLine(7, 30, 47, 30);
-            g2.fillOval(13, 35, 9, 9);
-            g2.fillOval(33, 35, 9, 9);
-            g2.setColor(Color.WHITE);
-            g2.fillOval(16, 38, 3, 3);
-            g2.fillOval(36, 38, 3, 3);
-        }
-
-        private void paintLion(Graphics2D g2) {
-            g2.setColor(new Color(183, 100, 25));
-            int[] xs = {27, 33, 40, 39, 47, 41, 43, 35, 32, 27, 22, 19, 11, 13, 7, 15, 14, 21};
-            int[] ys = {5, 13, 11, 19, 24, 29, 38, 37, 47, 40, 47, 37, 38, 29, 24, 19, 11, 13};
-            g2.fillPolygon(xs, ys, xs.length);
-            g2.setColor(new Color(255, 183, 77));
-            g2.fillOval(13, 13, 28, 28);
-            g2.setColor(Color.BLACK);
-            g2.drawOval(13, 13, 28, 28);
-            g2.fillOval(21, 24, 4, 4);
-            g2.fillOval(31, 24, 4, 4);
-            g2.drawArc(23, 29, 10, 7, 200, 140);
-            g2.setColor(new Color(93, 64, 55));
-            g2.fillOval(26, 29, 5, 4);
-        }
-
-        private void paintMinotaure(Graphics2D g2) {
-            g2.setColor(new Color(255, 238, 176));
-            g2.fillArc(2, 6, 21, 25, 120, 210);
-            g2.fillArc(31, 6, 21, 25, -150, 210);
-            g2.setColor(Color.BLACK);
-            g2.drawArc(2, 6, 21, 25, 120, 210);
-            g2.drawArc(31, 6, 21, 25, -150, 210);
-
-            g2.setColor(new Color(121, 85, 72));
-            g2.fillOval(13, 13, 28, 31);
-            g2.setColor(new Color(161, 113, 83));
-            g2.fillOval(18, 27, 18, 15);
-            g2.setColor(Color.BLACK);
-            g2.drawOval(13, 13, 28, 31);
-            g2.fillOval(21, 25, 4, 4);
-            g2.fillOval(31, 25, 4, 4);
-            g2.fillOval(23, 34, 3, 3);
-            g2.fillOval(30, 34, 3, 3);
-        }
-
-        private void paintDefault(Graphics2D g2) {
-            g2.setColor(couleur == Couleur.BLANC ? Color.WHITE : Color.BLACK);
-            g2.fillOval(10, 8, 34, 34);
-            g2.setColor(Color.DARK_GRAY);
-            g2.drawOval(10, 8, 34, 34);
-            g2.setFont(new Font("SansSerif", Font.BOLD, 20));
-            g2.drawString("?", 22, 32);
-        }
     }
 }

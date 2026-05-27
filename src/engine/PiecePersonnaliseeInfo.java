@@ -7,6 +7,7 @@ package engine;
 public class PiecePersonnaliseeInfo {
     private final String nom;
     private final String symbole;
+    private final String image;
     private final String couleur;
     private final int x;
     private final int y;
@@ -17,14 +18,16 @@ public class PiecePersonnaliseeInfo {
      *
      * @param nom nom de la piece
      * @param symbole symbole affiche
+     * @param image chemin de l'image, ou {@code null}
      * @param couleur couleur declaree dans le JSON
      * @param x colonne initiale
      * @param y ligne initiale
      * @param description description des capacites
      */
-    public PiecePersonnaliseeInfo(String nom, String symbole, String couleur, int x, int y, String description) {
+    public PiecePersonnaliseeInfo(String nom, String symbole, String image, String couleur, int x, int y, String description) {
         this.nom = nom;
         this.symbole = symbole;
+        this.image = image;
         this.couleur = couleur;
         this.x = x;
         this.y = y;
@@ -43,6 +46,12 @@ public class PiecePersonnaliseeInfo {
      * @return symbole affiche
      */
     public String getSymbole() { return symbole; }
+    /**
+     * Renvoie le chemin de l'image.
+     *
+     * @return chemin de l'image, ou {@code null} si aucune image n'est definie
+     */
+    public String getImage() { return image; }
     /**
      * Renvoie la couleur declaree.
      *

@@ -507,6 +507,7 @@ public class Game {
             copie = new PiecePersonnalisee(
                     personnalisee.getNom(),
                     personnalisee.getSymbol(),
+                    personnalisee.getImage(),
                     piece.getX(),
                     piece.getY(),
                     piece.getCouleur(),

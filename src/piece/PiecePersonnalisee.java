@@ -12,6 +12,7 @@ import plateau.Grille;
 public class PiecePersonnalisee extends Piece {
     private final String nom;
     private final String symbole;
+    private final String image;
     private final ReglesDeplacement regles;
 
     /**
@@ -25,9 +26,25 @@ public class PiecePersonnalisee extends Piece {
      * @param regles regles dynamiques de deplacement
      */
     public PiecePersonnalisee(String nom, String symbole, int x, int y, Couleur couleur, ReglesDeplacement regles) {
+        this(nom, symbole, null, x, y, couleur, regles);
+    }
+
+    /**
+     * Cree une piece personnalisee avec une image optionnelle.
+     *
+     * @param nom nom affiche de la piece
+     * @param symbole symbole texte ou Unicode utilise en secours
+     * @param image chemin de l'image, ou {@code null} si aucun fichier n'est defini
+     * @param x colonne initiale
+     * @param y ligne initiale
+     * @param couleur couleur de la piece
+     * @param regles regles dynamiques de deplacement
+     */
+    public PiecePersonnalisee(String nom, String symbole, String image, int x, int y, Couleur couleur, ReglesDeplacement regles) {
         super(x, y, couleur);
         this.nom = nom;
         this.symbole = symbole;
+        this.image = image;
         this.regles = regles;
     }
 
@@ -47,6 +64,15 @@ public class PiecePersonnalisee extends Piece {
      */
     public ReglesDeplacement getRegles() {
         return regles;
+    }
+
+    /**
+     * Renvoie le chemin de l'image associee.
+     *
+     * @return chemin de l'image, ou {@code null} si la piece utilise son symbole
+     */
+    public String getImage() {
+        return image;
     }
 
     @Override

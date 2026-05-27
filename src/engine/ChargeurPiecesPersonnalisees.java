@@ -90,6 +90,7 @@ public class ChargeurPiecesPersonnalisees {
                 catalogue.add(new PiecePersonnaliseeInfo(
                         nomPiece(definition),
                         convertirSymbole(asString(definition.get("codeUnicode"))),
+                        imagePiece(definition),
                         String.valueOf(definition.get("couleur")),
                         x,
                         y,
@@ -231,7 +232,7 @@ public class ChargeurPiecesPersonnalisees {
         );
 
         String symbole = convertirSymbole(asString(definition.get("codeUnicode")));
-        grille.setPiece(new PiecePersonnalisee(nom, symbole, x, y, couleur, regles), x, y);
+        grille.setPiece(new PiecePersonnalisee(nom, symbole, imagePiece(definition), x, y, couleur, regles), x, y);
         resultat.incrementerPiecesAjoutees();
     }
 
@@ -246,6 +247,11 @@ public class ChargeurPiecesPersonnalisees {
     private String nomPiece(Map<?, ?> definition) {
         String nom = asString(definition.get("nom"));
         return nom == null || nom.isBlank() ? "Piece personnalisee" : nom;
+    }
+
+    private String imagePiece(Map<?, ?> definition) {
+        String image = asString(definition.get("image"));
+        return image == null || image.isBlank() ? null : image.trim();
     }
 
     private Integer asInteger(Object value) {
