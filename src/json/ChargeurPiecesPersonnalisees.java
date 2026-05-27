@@ -1,4 +1,4 @@
-package engine;
+package json;
 
 import piece.Couleur;
 import piece.PiecePersonnalisee;

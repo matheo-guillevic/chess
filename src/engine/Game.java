@@ -1,5 +1,8 @@
 package engine;
 
+import json.ChargementPiecesResultat;
+import json.ChargeurPiecesPersonnalisees;
+import json.PiecePersonnaliseeInfo;
 import piece.*;
 import plateau.Grille;
 

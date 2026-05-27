@@ -1,10 +1,10 @@
 package cli;
 
-import engine.ChargementPiecesResultat;
 import engine.Coup;
 import engine.Game;
-import engine.PiecePersonnaliseeInfo;
 import ia.JoueurAutomatique;
+import json.ChargementPiecesResultat;
+import json.PiecePersonnaliseeInfo;
 import piece.Couleur;
 import java.nio.file.Path;
 import java.util.HashSet;

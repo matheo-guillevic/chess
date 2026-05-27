@@ -1,4 +1,4 @@
-package engine;
+package json;
 
 /**
  * Informations de previsualisation d'une piece personnalisee avant son

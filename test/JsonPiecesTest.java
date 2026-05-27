@@ -1,5 +1,5 @@
-import engine.ChargementPiecesResultat;
 import engine.Game;
+import json.ChargementPiecesResultat;
 import piece.Couleur;
 import piece.PiecePersonnalisee;
 import piece.Pion;

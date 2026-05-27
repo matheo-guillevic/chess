@@ -1,7 +1,7 @@
 import javax.swing.SwingUtilities;
 import gui.ChessGUI;
-import engine.ChargementPiecesResultat;
 import engine.Game;
+import json.ChargementPiecesResultat;
 import piece.Couleur;
 
 import java.nio.file.Path;
