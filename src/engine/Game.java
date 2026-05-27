@@ -14,15 +14,22 @@ import java.util.Set;
  *
  * <p>Cette classe centralise l'etat de la partie, le joueur courant, la
  * validation des coups legaux, les regles speciales, les pieces personnalisees
- * et l'IA.</p>
+ * et la gestion de "l'IA".</p>
  */
 public class Game {
+    /** Plateau contenant les pieces de la partie. */
     private final Grille grille;
+    /** Couleur du joueur qui doit jouer. */
     private Couleur currentTurn;
+    /** Indique si la partie est terminee par mat ou pat. */
     private boolean isFinished;
+    /** Couleur gagnante, ou {@code null} si la partie est nulle ou en cours. */
     private Couleur winner;
+    /** Pion pouvant etre capture en passant au prochain coup uniquement. */
     private Piece pionVulnerableEnPassant;
+    /** Colonne de la case d'arrivee autorisee pour une prise en passant. */
     private int caseEnPassantX = -1;
+    /** Ligne de la case d'arrivee autorisee pour une prise en passant. */
     private int caseEnPassantY = -1;
 
     /**
@@ -230,6 +237,21 @@ public class Game {
         return isSquareAttacked(roi.getX(), roi.getY(), adversaire(couleur));
     }
 
+    /**
+     * Verifie qu'un coup respecte les regles globales de la partie.
+     *
+     * <p>Cette validation complete la validation propre a chaque piece avec les
+     * contraintes du moteur : limites du plateau, bonne couleur, interdiction de
+     * capturer directement un roi, roque, prise en passant et interdiction de
+     * laisser son propre roi en echec.</p>
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @param couleur couleur du joueur qui tente le coup
+     * @return {@code true} si le coup est legal dans la position courante
+     */
     private boolean isLegalMove(int startX, int startY, int endX, int endY, Couleur couleur) {
         if (!grille.isInside(startX, startY) || !grille.isInside(endX, endY)) return false;
 
@@ -246,12 +268,33 @@ public class Game {
         return !roiEnEchec;
     }
 
+    /**
+     * Verifie le mouvement brut d'une piece avant le test d'echec au roi.
+     *
+     * @param piece piece deplacee
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @return {@code true} si le mouvement est autorise par la piece ou par une
+     *         regle speciale
+     */
     private boolean isPseudoMoveValid(Piece piece, int startX, int startY, int endX, int endY) {
         if (piece.isValidMove(endX, endY, grille)) return true;
         return isRoqueValide(piece, startX, startY, endX, endY)
                 || isPriseEnPassantValide(piece, startX, startY, endX, endY);
     }
 
+    /**
+     * Verifie si un deplacement correspond a un roque legal.
+     *
+     * @param piece piece deplacee, normalement un roi
+     * @param startX colonne de depart du roi
+     * @param startY ligne de depart du roi
+     * @param endX colonne d'arrivee du roi
+     * @param endY ligne d'arrivee du roi
+     * @return {@code true} si le petit ou grand roque est autorise
+     */
     private boolean isRoqueValide(Piece piece, int startX, int startY, int endX, int endY) {
         if (!(piece instanceof Roi) || piece.aDejaBouge()) return false;
         if (startY != endY || startX != 4 || Math.abs(endX - startX) != 2) return false;
@@ -273,6 +316,16 @@ public class Game {
                 && !isSquareAttacked(endX, endY, adversaire);
     }
 
+    /**
+     * Verifie si un deplacement de pion correspond a une prise en passant.
+     *
+     * @param piece piece deplacee
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @return {@code true} si la prise en passant est possible immediatement
+     */
     private boolean isPriseEnPassantValide(Piece piece, int startX, int startY, int endX, int endY) {
         if (!(piece instanceof Pion)) return false;
         if (pionVulnerableEnPassant == null) return false;
@@ -287,6 +340,19 @@ public class Game {
                 && pionVulnerableEnPassant.getCouleur() != piece.getCouleur();
     }
 
+    /**
+     * Applique temporairement un coup pour tester ses consequences.
+     *
+     * <p>La simulation sauvegarde toutes les informations necessaires a la
+     * restauration : piece deplacee, capture classique, prise en passant, roque
+     * et pieces ecrasees par une piece personnalisee.</p>
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @return etat a fournir a {@link #restaurerSimulation(EtatSimulation)}
+     */
     private EtatSimulation executerSimulation(int startX, int startY, int endX, int endY) {
         EtatSimulation etat = new EtatSimulation(startX, startY, endX, endY);
         Piece piece = grille.getPiece(startX, startY);
@@ -318,6 +384,11 @@ public class Game {
         return etat;
     }
 
+    /**
+     * Annule une simulation et restaure exactement l'etat sauvegarde.
+     *
+     * @param etat etat produit par {@link #executerSimulation(int, int, int, int)}
+     */
     private void restaurerSimulation(EtatSimulation etat) {
         grille.setPiece(etat.piece, etat.startX, etat.startY);
         grille.setPiece(etat.capture, etat.endX, etat.endY);
@@ -338,6 +409,19 @@ public class Game {
         }
     }
 
+    /**
+     * Execute reellement un coup deja valide.
+     *
+     * <p>Cette methode applique les effets concrets du coup : capture en
+     * passant, ecrasement de ligne, roque, mise a jour de l'etat "a deja bouge",
+     * vulnerabilite a la prise en passant et promotion.</p>
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @param promotion type de piece souhaite pour une promotion
+     */
     private void executerDeplacement(int startX, int startY, int endX, int endY, String promotion) {
         Piece piece = grille.getPiece(startX, startY);
         boolean priseEnPassant = isPriseEnPassantValide(piece, startX, startY, endX, endY);
@@ -379,6 +463,15 @@ public class Game {
         }
     }
 
+    /**
+     * Cree la piece issue d'une promotion de pion.
+     *
+     * @param promotion choix textuel de promotion
+     * @param x colonne de la piece promue
+     * @param y ligne de la piece promue
+     * @param couleur couleur de la piece promue
+     * @return nouvelle piece promue, une reine si le choix est absent ou inconnu
+     */
     private Piece creerPiecePromotion(String promotion, int x, int y, Couleur couleur) {
         String choix = promotion == null ? "reine" : promotion.trim().toLowerCase();
         switch (choix) {
@@ -394,12 +487,32 @@ public class Game {
         }
     }
 
+    /**
+     * Indique si une piece personnalisee ecrase les pieces sur une ligne.
+     *
+     * @param piece piece deplacee
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @return {@code true} si le coup active la capacite d'ecrasement
+     */
     private boolean isEcrasementLigne(Piece piece, int startX, int startY, int endX, int endY) {
         if (!(piece instanceof PiecePersonnalisee)) return false;
         PiecePersonnalisee piecePersonnalisee = (PiecePersonnalisee) piece;
         return piecePersonnalisee.getRegles().ecraseLigne() && (startX == endX || startY == endY);
     }
 
+    /**
+     * Supprime les pieces situees entre le depart et l'arrivee d'un ecrasement.
+     *
+     * @param startX colonne de depart
+     * @param startY ligne de depart
+     * @param endX colonne d'arrivee
+     * @param endY ligne d'arrivee
+     * @param sauvegarde liste recevant les pieces supprimees en simulation, ou
+     *        {@code null} lors d'un vrai deplacement
+     */
     private void supprimerPiecesEcrasees(int startX, int startY, int endX, int endY, List<PieceEcrasee> sauvegarde) {
         int stepX = Integer.compare(endX, startX);
         int stepY = Integer.compare(endY, startY);
@@ -419,12 +532,28 @@ public class Game {
         }
     }
 
+    /**
+     * Met a jour l'etat de fin de partie apres un coup joue.
+     *
+     * <p>Si le joueur courant n'a plus de coup legal, la partie se termine. Le
+     * gagnant est l'adversaire en cas d'echec et mat, ou {@code null} en cas de
+     * pat.</p>
+     */
     private void mettreAJourFinDePartie() {
         if (!getCoupsValides(currentTurn).isEmpty()) return;
         isFinished = true;
         winner = isKingInCheck(currentTurn) ? adversaire(currentTurn) : null;
     }
 
+    /**
+     * Evalue recursivement une position avec MinMax et elagage alpha-beta.
+     *
+     * @param profondeur profondeur restante de recherche
+     * @param alpha meilleure valeur deja garantie pour le joueur maximisant
+     * @param beta meilleure valeur deja garantie pour le joueur minimisant
+     * @param joueur couleur pour laquelle le score est calcule
+     * @return score de la position du point de vue de {@code joueur}
+     */
     private int alphaBeta(int profondeur, int alpha, int beta, Couleur joueur) {
         List<Coup> coups = getCoupsValides(currentTurn);
         if (profondeur == 0 || coups.isEmpty()) {
@@ -462,6 +591,13 @@ public class Game {
         return valeur;
     }
 
+    /**
+     * Calcule une evaluation materielle simple de la position.
+     *
+     * @param joueur couleur dont le point de vue sert au calcul
+     * @return score positif si la position favorise {@code joueur}, negatif
+     *         sinon
+     */
     private int evaluerPosition(Couleur joueur) {
         int score = 0;
         for (int y = 0; y < 8; y++) {
@@ -475,6 +611,12 @@ public class Game {
         return score;
     }
 
+    /**
+     * Donne la valeur materielle approximative d'une piece.
+     *
+     * @param piece piece a evaluer
+     * @return valeur utilisee par l'evaluation de l'IA
+     */
     private int valeurPiece(Piece piece) {
         if (piece instanceof Pion) return 100;
         if (piece instanceof Cavalier || piece instanceof Fou) return 300;
@@ -484,6 +626,14 @@ public class Game {
         return 400;
     }
 
+    /**
+     * Indique si une case est attaquee par au moins une piece d'une couleur.
+     *
+     * @param x colonne de la case testee
+     * @param y ligne de la case testee
+     * @param attaquant couleur des pieces attaquantes
+     * @return {@code true} si la case est menacee
+     */
     private boolean isSquareAttacked(int x, int y, Couleur attaquant) {
         for (int startY = 0; startY < 8; startY++) {
             for (int startX = 0; startX < 8; startX++) {
@@ -496,6 +646,17 @@ public class Game {
         return false;
     }
 
+    /**
+     * Verifie si une piece attaque une case donnee.
+     *
+     * <p>Les pions et les rois sont traites a part pour raisonner en termes de
+     * cases attaquees, independamment de certains details de deplacement.</p>
+     *
+     * @param piece piece attaquante potentielle
+     * @param x colonne de la case testee
+     * @param y ligne de la case testee
+     * @return {@code true} si la piece attaque la case
+     */
     private boolean attaqueCase(Piece piece, int x, int y) {
         int deltaX = Math.abs(x - piece.getX());
         int deltaY = Math.abs(y - piece.getY());
@@ -512,6 +673,12 @@ public class Game {
         return piece.isValidMove(x, y, grille);
     }
 
+    /**
+     * Recherche le roi d'une couleur sur le plateau.
+     *
+     * @param couleur couleur du roi recherche
+     * @return piece roi trouvee, ou {@code null} si elle est absente
+     */
     private Piece trouverRoi(Couleur couleur) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
@@ -524,27 +691,63 @@ public class Game {
         return null;
     }
 
+    /**
+     * Renvoie la couleur opposee.
+     *
+     * @param couleur couleur source
+     * @return {@link Couleur#NOIR} pour les blancs, {@link Couleur#BLANC} pour
+     *         les noirs
+     */
     private Couleur adversaire(Couleur couleur) {
         return couleur == Couleur.BLANC ? Couleur.NOIR : Couleur.BLANC;
     }
 
+    /**
+     * Etat sauvegarde pendant une simulation de coup.
+     *
+     * <p>Cette structure permet de revenir a la position precedente apres un
+     * test de legalite ou une recherche MinMax.</p>
+     */
     private static class EtatSimulation {
+        /** Colonne de depart du coup simule. */
         private final int startX;
+        /** Ligne de depart du coup simule. */
         private final int startY;
+        /** Colonne d'arrivee du coup simule. */
         private final int endX;
+        /** Ligne d'arrivee du coup simule. */
         private final int endY;
+        /** Piece deplacee pendant la simulation. */
         private Piece piece;
+        /** Piece capturee sur la case d'arrivee, le cas echeant. */
         private Piece capture;
+        /** Etat "a deja bouge" de la piece avant la simulation. */
         private boolean pieceAvaitBouge;
+        /** Piece capturee par prise en passant, le cas echeant. */
         private Piece captureEnPassant;
+        /** Colonne de la piece capturee en passant. */
         private int captureEnPassantX = -1;
+        /** Ligne de la piece capturee en passant. */
         private int captureEnPassantY = -1;
+        /** Pieces retirees par une capacite d'ecrasement pendant la simulation. */
         private final List<PieceEcrasee> piecesEcrasees = new ArrayList<>();
+        /** Tour deplacee pendant un roque simule. */
         private Piece rook;
+        /** Colonne de depart de la tour pendant un roque simule. */
         private int rookStartX = -1;
+        /** Colonne d'arrivee de la tour pendant un roque simule. */
         private int rookEndX = -1;
+        /** Etat "a deja bouge" de la tour avant le roque simule. */
         private boolean rookAvaitBouge;
 
+        /**
+         * Cree une sauvegarde pour un coup simule.
+         *
+         * @param startX colonne de depart
+         * @param startY ligne de depart
+         * @param endX colonne d'arrivee
+         * @param endY ligne d'arrivee
+         */
         private EtatSimulation(int startX, int startY, int endX, int endY) {
             this.startX = startX;
             this.startY = startY;
@@ -553,11 +756,24 @@ public class Game {
         }
     }
 
+    /**
+     * Piece retiree temporairement par une capacite d'ecrasement.
+     */
     private static class PieceEcrasee {
+        /** Piece retiree du plateau. */
         private final Piece piece;
+        /** Colonne ou se trouvait la piece. */
         private final int x;
+        /** Ligne ou se trouvait la piece. */
         private final int y;
 
+        /**
+         * Memorise une piece ecrasee et sa position.
+         *
+         * @param piece piece retiree
+         * @param x colonne d'origine
+         * @param y ligne d'origine
+         */
         private PieceEcrasee(Piece piece, int x, int y) {
             this.piece = piece;
             this.x = x;

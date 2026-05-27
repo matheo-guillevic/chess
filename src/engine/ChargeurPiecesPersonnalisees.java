@@ -108,16 +108,18 @@ public class ChargeurPiecesPersonnalisees {
             throw new IOException("Fichier introuvable : " + fichier + " (repertoire courant : " + System.getProperty("user.dir") + ")");
         }
 
+        //Gestion d'erreur pas de racine dans le JSON
         Object racine = new SimpleJsonParser(Files.readString(fichierResolue)).parse();
         if (!(racine instanceof Map<?, ?>)) {
             throw new IllegalArgumentException("Le fichier JSON doit contenir un objet racine.");
         }
 
+        //récupération d'une liste de pieces perso et gestion si liste inexistante
         Object pieces = ((Map<?, ?>) racine).get("piecesPersonnalisees");
         if (!(pieces instanceof List<?>)) {
             throw new IllegalArgumentException("Le fichier ne contient pas de tableau piecesPersonnalisees.");
         }
-
+        // Création d'une liste des définition
         List<Map<?, ?>> definitions = new ArrayList<>();
         for (Object piece : (List<?>) pieces) {
             Map<?, ?> definition = asMap(piece);
@@ -128,6 +130,7 @@ public class ChargeurPiecesPersonnalisees {
         return definitions;
     }
 
+    //Récupération du fichier depuis différents emplacements possibles
     private Path resoudreFichier(Path fichier) {
         if (fichier == null) return null;
 
